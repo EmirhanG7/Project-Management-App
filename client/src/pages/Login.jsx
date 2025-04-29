@@ -21,6 +21,7 @@ export default function LoginPage() {
   };
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-10 space-y-4">
       <h2 className="text-2xl font-bold mb-4">Giriş Yap</h2>
       {error && <div className="text-red-500">{error}</div>}
@@ -43,5 +44,10 @@ export default function LoginPage() {
         Giriş Yap
       </Button>
     </form>
+    <Button variant="link" asChild className="w-full justify-center text-sm">
+        <Link to="/register">Hesabın yok mu? Kayıt ol</Link>
+      </Button>
+    </>
+    
   );
 }
