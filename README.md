@@ -83,10 +83,33 @@ Uygulama `http://localhost:5173` adresinde açılacaktır.
 
 ```
 project-management-app/
-├── client/   # React + Vite + Tailwind + shadcn
-├── server/   # Express.js + Drizzle ORM + PostgreSQL
-├── README.md
-├── .gitignore
+├── client/                      # Frontend uygulaması (React + Vite)
+│   ├── public/                  # Vite public dizini
+│   ├── src/
+│   │   ├── components/          # Ortak bileşenler (CardItem, Column, ConfirmModal vs.)
+│   │   ├── pages/               # React sayfaları
+│   │   ├── api.js               # API işlemlerinin yapıldığı dosya
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css            # Tailwind CSS ayarları
+│   ├── .env                     # VITE_API_BASE içeren env dosyası
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   └── vite.config.js
+│
+├── server/                      # Backend uygulaması (Express.js + Drizzle ORM)
+│   ├── db/
+│   │   ├── index.js             # Drizzle ve veritabanı bağlantısı
+│   │   └── schema.js            # PostgreSQL tablo şemaları
+│   ├── controllers/             # Tüm controller dosyaları (auth, board, column, card)
+│   ├── routes/                  # Express route dosyaları (auth, boards, columns, cards)
+│   ├── middleware/              # Kimlik doğrulama middleware (JWT)
+│   ├── .env                     # DATABASE_URL, JWT_SECRET vs.
+│   ├── server.js                # Express app başlatıcı dosya
+│   └── package.json
+│
+├── README.md                      
+├── .gitignore                     
 ```
 
 `.gitignore` dosyası sayesinde aşağıdaki dosya ve klasörler repoya yüklenmeyecektir:
