@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import {useEffect, useRef, useState} from 'react';
 import { useParams } from 'react-router-dom';
 import { getColumns, getCards, createColumn, moveCard, reorderCards } from '../api';
 import Column from '../components/Column';
@@ -25,6 +25,8 @@ export default function BoardPage() {
   const [error, setError] = useState('');
   const [activeCard, setActiveCard] = useState(null);
   const [overColumnId, setOverColumnId] = useState(null);
+
+  const scrollContainerRef = useRef(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -178,11 +180,34 @@ export default function BoardPage() {
     setOverColumnId(null);
   };
 
+  const handleDragMove = (event) => {
+    const { delta } = event;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const threshold = 60;
+    const scrollSpeed = 10;
+
+    const containerRect = container.getBoundingClientRect();
+    const pointerX = event.activatorEvent.touches?.[0]?.clientX;
+
+    if (!pointerX) return;
+
+    if (pointerX > containerRect.right - threshold) {
+      container.scrollLeft += scrollSpeed;
+    }
+
+    if (pointerX < containerRect.left + threshold) {
+      container.scrollLeft -= scrollSpeed;
+    }
+  };
+
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
       onDragStart={handleDragStart}
+      onDragMove={handleDragMove}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
@@ -201,7 +226,9 @@ export default function BoardPage() {
           <Button onClick={handleCreateColumn}>Liste Ekle</Button>
         </div>
 
-        <div className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5">
+        <div
+          ref={scrollContainerRef}
+          className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5">
           {columns.map((col) => (
             <motion.div
               key={col.id}
