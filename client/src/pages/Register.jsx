@@ -3,6 +3,7 @@ import { register } from '../api';
 import { useNavigate } from 'react-router-dom';
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
+import { Link } from 'react-router-dom';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -48,6 +49,10 @@ export default function RegisterPage() {
 
       <Button type="submit" className="w-full">
         Kayıt Ol
+      </Button>
+      
+      <Button variant="outline" asChild className="w-full justify-center text-sm">
+        <Link to="/login">Zaten bir hesabın var mı? Giriş Yap</Link>
       </Button>
     </form>
   );
