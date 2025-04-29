@@ -45,7 +45,7 @@ export default function LoginPage() {
         Giriş Yap
       </Button>
     </form>
-    <Button variant="link" asChild className="w-full justify-center text-sm">
+    <Button variant="outline" asChild className="w-full justify-center text-sm">
         <Link to="/register">Hesabın yok mu? Kayıt ol</Link>
       </Button>
     </>
