@@ -34,7 +34,7 @@ export default function CardItem({ card, onDelete, isOverlay = false }) {
       {...(isOverlay ? {} : listeners)}
       className={`
         p-2 bg-gray-100 rounded-[10px] flex justify-between items-center
-        touch-none select-none transition-all duration-200
+        select-none transition-all duration-200
         ${isDragging ? 'opacity-50 cursor-grabbing' : 'cursor-grab'}
       `}
       style={style}

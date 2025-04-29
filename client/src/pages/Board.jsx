@@ -28,11 +28,13 @@ export default function BoardPage() {
 
   const scrollContainerRef = useRef(null);
 
+  const isTouchDevice = typeof window !== 'undefined'
+    && window.matchMedia('(pointer: coarse)').matches;
+
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
-  useSensor(TouchSensor)
+    isTouchDevice
+      ? useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+      : useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
   useEffect(() => {
@@ -232,7 +234,7 @@ export default function BoardPage() {
 
         <div
           ref={scrollContainerRef}
-          className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5">
+          className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5 touch-pan-x">
           {columns.map((col) => (
             <motion.div
               key={col.id}
