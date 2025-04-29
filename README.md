@@ -3,7 +3,7 @@
 
 Bu proje Trello ve Notion benzeri bir görev yönetim uygulamasıdır. Kullanıcılar kendi panolarını (board), listelerini (column) ve kartlarını (card) oluşturabilir, kartları kolonlar arasında veya kolon içinde sürükleyerek taşıyabilir ve sıralamasını değiştirebilir.
 
-Frontend tarafında React 19, Vite, Tailwind CSS 4, shadcn/ui bileşenleri ve dnd-kit kullanılmıştır. Backend tarafında Node.js, Express.js, PostgreSQL ve Drizzle ORM ile JWT kimlik doğrulama mekanizması kurulmuştur.
+Frontend tarafında React 19, Vite, Tailwind CSS 4, shadcn/ui bileşenleri, Framer Motion ve dnd-kit kullanılmıştır. Backend tarafında Node.js, Express.js, PostgreSQL ve Drizzle ORM ile JWT kimlik doğrulama mekanizması kurulmuştur.
 
 Proje iki ana klasörden oluşur:
 - **client/**: React ile yazılmış frontend uygulaması
@@ -12,7 +12,7 @@ Proje iki ana klasörden oluşur:
 Projeyi çalıştırmak için önce repoyu klonlayın:
 
 ```bash
-git clone https://github.com/kullanici-adi/project-management-app.git
+git clone https://github.com/emirhang7/project-management-app.git
 cd project-management-app
 ```
 
@@ -28,6 +28,7 @@ Sonrasında `.env` dosyası oluşturun ve içine aşağıdaki bilgileri yazın:
 ```env
 DATABASE_URL=postgresql://kullanici_adi:sifre@localhost:5432/veritabani_adi
 JWT_SECRET=senin_secret_keyin
+PORT=4000
 ```
 
 Daha sonra backend sunucusunu başlatın:
@@ -43,6 +44,8 @@ Sunucu çalışmaya başlayacak ve `http://localhost:4000` adresinde API servisi
 ```bash
 cd ../client
 npm install
+'Paket uyumluluk sorunu olursa =>'
+npm install --legacy-peer-deps 
 ```
 
 Ardından yine `client` dizini içinde `.env` dosyası oluşturup içine aşağıdaki bilgileri yazın:
@@ -119,4 +122,4 @@ git push -u origin main
 
 ---
 
-### İyi çalışmalar!
+### Uygulama geliştirilme devam etmektedir.
