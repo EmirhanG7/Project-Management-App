@@ -12,7 +12,7 @@ import {
   useSensor,
   useSensors,
   PointerSensor,
-  DragOverlay,
+  DragOverlay, TouchSensor,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import CardItem from "@/components/CardItem.jsx";
@@ -31,7 +31,8 @@ export default function BoardPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
-    })
+    }),
+  useSensor(TouchSensor)
   );
 
   useEffect(() => {
@@ -181,26 +182,29 @@ export default function BoardPage() {
   };
 
   const handleDragMove = (event) => {
-    const { delta } = event;
     const container = scrollContainerRef.current;
     if (!container) return;
 
+
+    const pointerX =
+      event.pointerCoordinates?.x ??
+      event.activatorEvent?.clientX ??
+      event.activatorEvent?.touches?.[0]?.clientX;
+
+    if (pointerX == null) return;
+
+    const { left, right } = container.getBoundingClientRect();
     const threshold = 60;
-    const scrollSpeed = 10;
+    const speed = 10;
 
-    const containerRect = container.getBoundingClientRect();
-    const pointerX = event.activatorEvent.touches?.[0]?.clientX;
-
-    if (!pointerX) return;
-
-    if (pointerX > containerRect.right - threshold) {
-      container.scrollLeft += scrollSpeed;
-    }
-
-    if (pointerX < containerRect.left + threshold) {
-      container.scrollLeft -= scrollSpeed;
+    if (pointerX > right - threshold) {
+      container.scrollLeft += speed;
+    } else if (pointerX < left + threshold) {
+      container.scrollLeft -= speed;
     }
   };
+
+
 
   return (
     <DndContext
