@@ -69,58 +69,60 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
   return (
     <Card
       ref={setNodeRef}
-      className="bg-white p-4 rounded shadow w-86 min-h-[500px] flex flex-col justify-between flex-shrink-0"
+      className="bg-white p-4 rounded shadow min-w-80 min-h-[85vh] flex flex-col justify-between flex-shrink-0"
     >
-      <ConfirmModal
-        isOpen={showDeleteColumnModal}
-        title="Bu listeyi silmek istiyor musun?"
-        onConfirm={handleConfirmDeleteColumn}
-        onCancel={() => setShowDeleteColumnModal(false)}
-      />
-      <ConfirmModal
-        isOpen={showDeleteCardModal}
-        title="Bu kartı silmek istiyor musun?"
-        onConfirm={handleConfirmDeleteCard}
-        onCancel={() => {
-          setSelectedCardId(null);
-          setShowDeleteCardModal(false);
-        }}
-      />
+      <div className='flex flex-col gap-6'>
+        <ConfirmModal
+          isOpen={showDeleteColumnModal}
+          title="Bu listeyi silmek istiyor musun?"
+          onConfirm={handleConfirmDeleteColumn}
+          onCancel={() => setShowDeleteColumnModal(false)}
+        />
+        <ConfirmModal
+          isOpen={showDeleteCardModal}
+          title="Bu kartı silmek istiyor musun?"
+          onConfirm={handleConfirmDeleteCard}
+          onCancel={() => {
+            setSelectedCardId(null);
+            setShowDeleteCardModal(false);
+          }}
+        />
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="font-bold">{column.title}</h2>
-        <Button
-          variant="destructive"
-          size="icon"
-          onClick={() => setShowDeleteColumnModal(true)}
-        >
-          ×
-        </Button>
-      </div>
-
-      <SortableContext
-        items={hasCards ? cards.map((c) => c.id.toString()) : [`empty-${column.id}`]}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-2 mb-4 min-h-[100px]">
-          {hasCards ? (
-            cards.map((card) => (
-              <CardItem
-                key={card.id}
-                card={card}
-                onDelete={() => {
-                  setSelectedCardId(card.id);
-                  setShowDeleteCardModal(true);
-                }}
-              />
-            ))
-          ) : (
-            <div className="h-20 bg-transparent rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-              Kart ekleyin veya sürükleyin.
-            </div>
-          )}
+        <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-2 flex-shrink-0">
+          <h2 className="font-bold">{column.title}</h2>
+          <Button
+            variant="destructive"
+            size="icon"
+            onClick={() => setShowDeleteColumnModal(true)}
+          >
+            ×
+          </Button>
         </div>
-      </SortableContext>
+
+        <SortableContext
+          items={hasCards ? cards.map((c) => c.id.toString()) : [`empty-${column.id}`]}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-2 mb-4 min-h-[100px]">
+            {hasCards ? (
+              cards.map((card) => (
+                <CardItem
+                  key={card.id}
+                  card={card}
+                  onDelete={() => {
+                    setSelectedCardId(card.id);
+                    setShowDeleteCardModal(true);
+                  }}
+                />
+              ))
+            ) : (
+              <div className="h-20 bg-transparent rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+                Kart ekleyin veya sürükleyin.
+              </div>
+            )}
+          </div>
+        </SortableContext>
+      </div>
 
       <div className="flex flex-col space-y-2">
         <Input

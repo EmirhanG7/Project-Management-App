@@ -4,6 +4,7 @@ import { getColumns, getCards, createColumn, moveCard, reorderCards } from '../a
 import Column from '../components/Column';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 import {
   DndContext,
@@ -200,9 +201,16 @@ export default function BoardPage() {
           <Button onClick={handleCreateColumn}>Liste Ekle</Button>
         </div>
 
-        <div className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5 transition-all duration-300 ease-in-out">
+        <div className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5">
           {columns.map((col) => (
-            <div className='snap-center'>
+            <motion.div
+              key={col.id}
+              className='snap-center w-full flex-shrink-0 md:flex-initial md:min-w-80'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <Column
                 key={col.id}
                 column={col}
@@ -210,7 +218,7 @@ export default function BoardPage() {
                 boardId={boardId}
                 onAddCard={loadBoard}
               />
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
