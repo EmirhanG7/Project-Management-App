@@ -14,6 +14,7 @@ import {
   DragOverlay,
 } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
+import CardItem from "@/components/CardItem.jsx";
 
 export default function BoardPage() {
   const { boardId } = useParams();
@@ -97,9 +98,7 @@ export default function BoardPage() {
     let activeColumnId = findCardColumn(activeId);
     let overColId = findCardColumn(overId);
 
-    if (!overColId) {
-      overColId = overId;
-    }
+    if (!overColId) overColId = overId;
 
     if (!activeColumnId || !overColId) return;
 
@@ -108,20 +107,17 @@ export default function BoardPage() {
       if (!activeCard) return;
 
       setCardsMap((prev) => {
-        const newSourceCards = prev[activeColumnId].filter((c) => c.id.toString() !== activeId);
-        const newTargetCards = [...(prev[overColId] || [])];
+        const newSource = prev[activeColumnId].filter((c) => c.id.toString() !== activeId);
+        const newTarget = [...(prev[overColId] || [])];
+        const overIndex = newTarget.findIndex((c) => c.id.toString() === overId);
 
-        const overIndex = newTargetCards.findIndex((c) => c.id.toString() === overId);
-        if (overIndex === -1) {
-          newTargetCards.push(activeCard);
-        } else {
-          newTargetCards.splice(overIndex, 0, activeCard);
-        }
+        if (overIndex === -1) newTarget.push(activeCard);
+        else newTarget.splice(overIndex, 0, activeCard);
 
         return {
           ...prev,
-          [activeColumnId]: newSourceCards,
-          [overColId]: newTargetCards,
+          [activeColumnId]: newSource,
+          [overColId]: newTarget,
         };
       });
 
@@ -143,7 +139,6 @@ export default function BoardPage() {
   const handleDragEnd = async (event) => {
     const { active } = event;
     setActiveCard(null);
-
     if (!active) return;
 
     const activeId = active.id;
@@ -159,11 +154,7 @@ export default function BoardPage() {
 
         await moveCard(boardId, oldColumnId, activeId, newColumnId, newOrder);
 
-        const reordered = newCards.map((c, idx) => ({
-          id: c.id,
-          order: idx,
-        }));
-
+        const reordered = newCards.map((c, idx) => ({ id: c.id, order: idx }));
         await reorderCards(boardId, newColumnId, reordered);
       } catch (err) {
         console.error('Move sırasında hata:', err);
@@ -171,11 +162,7 @@ export default function BoardPage() {
     } else {
       try {
         const sourceCards = cardsMap[oldColumnId];
-        const reordered = sourceCards.map((c, idx) => ({
-          id: c.id,
-          order: idx,
-        }));
-
+        const reordered = sourceCards.map((c, idx) => ({ id: c.id, order: idx }));
         await reorderCards(boardId, oldColumnId, reordered);
       } catch (err) {
         console.error('Reorder sırasında hata:', err);
@@ -210,29 +197,31 @@ export default function BoardPage() {
             value={newColumnTitle}
             onChange={(e) => setNewColumnTitle(e.target.value)}
           />
-          <Button onClick={handleCreateColumn}>
-            Liste Ekle
-          </Button>
+          <Button onClick={handleCreateColumn}>Liste Ekle</Button>
         </div>
 
-        <div className="flex items-center gap-6 overflow-x-auto">
+        <div className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5 transition-all duration-300 ease-in-out">
           {columns.map((col) => (
-            <Column
-              key={col.id}
-              column={col}
-              cards={cardsMap[col.id] || []}
-              boardId={boardId}
-              onAddCard={loadBoard}
-            />
+            <div className='snap-center'>
+              <Column
+                key={col.id}
+                column={col}
+                cards={cardsMap[col.id] || []}
+                boardId={boardId}
+                onAddCard={loadBoard}
+              />
+            </div>
           ))}
         </div>
       </div>
 
       <DragOverlay>
         {activeCard ? (
-          <div className="p-2 bg-gray-100 rounded shadow text-center font-semibold">
-            {activeCard.title}
-          </div>
+          <CardItem
+            card={activeCard}
+            isOverlay={true}
+            onDelete={() => {}}
+          />
         ) : null}
       </DragOverlay>
     </DndContext>
