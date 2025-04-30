@@ -12,8 +12,8 @@ export default function Layout() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <header className="flex justify-between items-center px-6 py-4 bg-white shadow">
+    <div className="min-h-screen flex flex-col bg-gray-100 ">
+      <header className="flex justify-between items-center px-6 md:px-12 py-4 bg-white shadow">
           <Link to="/" className="text-xl font-bold">
             Project Management App
           </Link>
@@ -22,7 +22,7 @@ export default function Layout() {
             Çıkış Yap
           </Button>
       </header>
-      <main className="flex-1 p-4">
+      <main className="flex-1 p-6 md:px-12">
         <Outlet />
       </main>
     </div>

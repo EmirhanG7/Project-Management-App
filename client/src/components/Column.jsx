@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import ConfirmModal from './ConfirmModal'
 import CardItem from './CardItem'
+import {Loader2} from "lucide-react";
 
 export default function Column({ column, cards = [], onAddCard, boardId }) {
   const [newCardTitle, setNewCardTitle] = useState('')
@@ -13,14 +14,17 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false)
   const [showDeleteCardModal, setShowDeleteCardModal] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleCreateCard = async () => {
     if (!newCardTitle.trim()) return setError('Kart başlığı boş olamaz.')
     try {
+      setLoading(true)
       await createCard(boardId, column.id, { title: newCardTitle })
+      onAddCard()
       setNewCardTitle('')
       setError('')
-      onAddCard()
+      setLoading(false)
     } catch {
       setError('Kart oluşturulamadı.')
     }
@@ -85,9 +89,6 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
                   ref={provided.innerRef}
                   {...provided.draggableProps}
                   {...provided.dragHandleProps}
-                  className={`
-                    ${snapshot.isDragging ? 'scale-105 shadow-lg' : ''}
-                  `}
                 >
                   <CardItem
                     card={card}
@@ -107,14 +108,20 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
         )}
       </div>
 
-      {/* Yeni kart ekle */}
       <div className="flex flex-col space-y-2">
         <Input
           placeholder="Yeni kart adı"
           value={newCardTitle}
           onChange={(e) => setNewCardTitle(e.target.value)}
         />
-        <Button onClick={handleCreateCard}>Kart Ekle</Button>
+        {
+          loading ?
+            <Button disabled>
+              <Loader2 className="animate-spin" />
+            </Button>
+            :
+            <Button onClick={handleCreateCard}>Kart Ekle</Button>
+        }
         {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     </Card>

@@ -15,6 +15,7 @@ import {
   Droppable,
   Draggable,
 } from '@hello-pangea/dnd'
+import {Loader2} from "lucide-react";
 
 function reorderList(list, from, to) {
   const result = Array.from(list)
@@ -30,6 +31,7 @@ export default function BoardPage() {
   const [newColumnTitle, setNewColumnTitle] = useState('')
   const [error, setError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     loadBoard()
@@ -52,10 +54,12 @@ export default function BoardPage() {
   const handleCreateColumn = async () => {
     if (!newColumnTitle.trim()) return setError('Başlık boş olamaz.')
     try {
+      setLoading(true)
       await createColumn(boardId, { title: newColumnTitle })
+      await loadBoard()
       setNewColumnTitle('')
       setError('')
-      await loadBoard()
+      setLoading(false)
     } catch {
       setError('Kolon oluşturulamadı.')
     }
@@ -118,7 +122,7 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="p-4 h-full flex flex-col">
+    <div className="py-4 h-full flex flex-col">
       <h1 className="text-2xl font-bold mb-4">Pano: {boardId}</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
@@ -128,7 +132,14 @@ export default function BoardPage() {
           value={newColumnTitle}
           onChange={e => setNewColumnTitle(e.target.value)}
         />
-        <Button onClick={handleCreateColumn}>Liste Ekle</Button>
+        {
+          loading ?
+            <Button disabled>
+              <Loader2 className="animate-spin" />
+            </Button>
+            :
+            <Button onClick={handleCreateColumn}>Liste Ekle</Button>
+        }
       </div>
 
       <DragDropContext
@@ -152,7 +163,7 @@ export default function BoardPage() {
                 <div
                   ref={provided.innerRef}
                   {...provided.droppableProps}
-                  className="snap-center w-full md:min-w-[300px] flex-shrink-0 md:flex-initial px-2"
+                  className="snap-center w-full md:min-w-[300px] flex-shrink-0 md:flex-initial"
                 >
                   <Column
                     column={col}
