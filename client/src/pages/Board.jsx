@@ -16,6 +16,7 @@ import {
   Draggable,
 } from '@hello-pangea/dnd'
 import {Loader2} from "lucide-react";
+import SubmitButton from "@/components/SubmitButton.jsx";
 
 function reorderList(list, from, to) {
   const result = Array.from(list)
@@ -132,14 +133,7 @@ export default function BoardPage() {
           value={newColumnTitle}
           onChange={e => setNewColumnTitle(e.target.value)}
         />
-        {
-          loading ?
-            <Button disabled>
-              <Loader2 className="animate-spin" />
-            </Button>
-            :
-            <Button onClick={handleCreateColumn}>Liste Ekle</Button>
-        }
+        <SubmitButton loading={loading} submit={handleCreateColumn} title="Liste Ekle" />
       </div>
 
       <DragDropContext

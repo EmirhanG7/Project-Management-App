@@ -4,20 +4,25 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Link } from 'react-router-dom';
+import {Loader2} from "lucide-react";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const { token } = await register(form);
       localStorage.setItem('token', token);
+      setLoading(false);
       navigate('/boards');
     } catch (err) {
       setError(err.message);
+      setLoading(false);
     }
   };
 
@@ -47,10 +52,17 @@ export default function RegisterPage() {
         onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
       />
 
-      <Button type="submit" className="w-full">
-        Kayıt Ol
-      </Button>
-      
+      {
+        loading ?
+          <Button disabled>
+            <Loader2 className="animate-spin" />
+          </Button>
+          :
+          <Button type='submit' className='w-full'>
+            Kayıt Ol
+          </Button>
+      }
+
       <Button variant="outline" asChild className="w-full justify-center text-sm">
         <Link to="/login">Zaten bir hesabın var mı? Giriş Yap</Link>
       </Button>

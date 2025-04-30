@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import ConfirmModal from './ConfirmModal'
 import CardItem from './CardItem'
 import {Loader2} from "lucide-react";
+import SubmitButton from "@/components/SubmitButton.jsx";
 
 export default function Column({ column, cards = [], onAddCard, boardId }) {
   const [newCardTitle, setNewCardTitle] = useState('')
@@ -114,14 +115,7 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
           value={newCardTitle}
           onChange={(e) => setNewCardTitle(e.target.value)}
         />
-        {
-          loading ?
-            <Button disabled>
-              <Loader2 className="animate-spin" />
-            </Button>
-            :
-            <Button onClick={handleCreateCard}>Kart Ekle</Button>
-        }
+        <SubmitButton loading={loading} error={error} submit={handleCreateCard} title="Kart Ekle" />
         {error && <p className="text-red-500 text-sm">{error}</p>}
       </div>
     </Card>
