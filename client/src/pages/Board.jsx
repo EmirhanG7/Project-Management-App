@@ -1,270 +1,172 @@
-import {useEffect, useRef, useState} from 'react';
-import { useParams } from 'react-router-dom';
-import { getColumns, getCards, createColumn, moveCard, reorderCards } from '../api';
-import Column from '../components/Column';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-
+import { useEffect, useRef, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import {
-  DndContext,
-  closestCenter,
-  useSensor,
-  useSensors,
-  PointerSensor,
-  DragOverlay, TouchSensor,
-} from '@dnd-kit/core';
-import { arrayMove } from '@dnd-kit/sortable';
-import CardItem from "@/components/CardItem.jsx";
+  getColumns,
+  getCards,
+  createColumn,
+  moveCard,
+  reorderCards,
+} from '../api'
+import Column from '../components/Column'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+} from '@hello-pangea/dnd'
+
+function reorderList(list, from, to) {
+  const result = Array.from(list)
+  const [m] = result.splice(from, 1)
+  result.splice(to, 0, m)
+  return result
+}
 
 export default function BoardPage() {
-  const { boardId } = useParams();
-  const [columns, setColumns] = useState([]);
-  const [cardsMap, setCardsMap] = useState({});
-  const [newColumnTitle, setNewColumnTitle] = useState('');
-  const [error, setError] = useState('');
-  const [activeCard, setActiveCard] = useState(null);
-  const [overColumnId, setOverColumnId] = useState(null);
-
-  const scrollContainerRef = useRef(null);
-
-  const isTouchDevice = typeof window !== 'undefined'
-    && window.matchMedia('(pointer: coarse)').matches;
-
-  const sensors = useSensors(
-    isTouchDevice
-      ? useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-      : useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
-  );
+  const { boardId } = useParams()
+  const [columns, setColumns] = useState([])
+  const [cardsMap, setCardsMap] = useState({})
+  const [newColumnTitle, setNewColumnTitle] = useState('')
+  const [error, setError] = useState('')
+  const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
-    loadBoard();
-  }, [boardId]);
+    loadBoard()
+  }, [boardId])
 
   async function loadBoard() {
     try {
-      const cols = await getColumns(boardId);
-      setColumns(cols);
-
-      const cards = {};
+      const cols = await getColumns(boardId)
+      setColumns(cols)
+      const map = {}
       for (const col of cols) {
-        cards[col.id] = await getCards(boardId, col.id);
+        map[col.id] = await getCards(boardId, col.id)
       }
-      setCardsMap(cards);
-    } catch (err) {
-      console.error(err);
-      setError('Veriler yüklenemedi.');
+      setCardsMap(map)
+    } catch {
+      setError('Veriler yüklenemedi.')
     }
   }
 
   const handleCreateColumn = async () => {
-    if (!newColumnTitle.trim()) {
-      setError('Başlık boş olamaz.');
-      return;
-    }
+    if (!newColumnTitle.trim()) return setError('Başlık boş olamaz.')
     try {
-      await createColumn(boardId, { title: newColumnTitle });
-      setNewColumnTitle('');
-      setError('');
-      await loadBoard();
-    } catch (err) {
-      console.error(err);
-      setError('Kolon oluşturulamadı.');
+      await createColumn(boardId, { title: newColumnTitle })
+      setNewColumnTitle('')
+      setError('')
+      await loadBoard()
+    } catch {
+      setError('Kolon oluşturulamadı.')
     }
-  };
+  }
 
-  const findCardColumn = (cardId) => {
-    for (const colId in cardsMap) {
-      if (cardsMap[colId].some((c) => c.id.toString() === cardId)) {
-        return colId;
-      }
-    }
-    return null;
-  };
+  const onDragStart = () => {
+    setIsDragging(true)
+  }
 
-  const handleDragStart = (event) => {
-    const { active } = event;
-    const activeId = active.id;
-    const sourceColId = findCardColumn(activeId);
+  const onDragEnd = async (result) => {
+    setIsDragging(false)
 
-    if (!sourceColId) return;
+    const { source, destination, draggableId } = result
+    if (!destination) return
 
-    const activeCard = cardsMap[sourceColId].find((c) => c.id.toString() === activeId);
-    setActiveCard({ ...activeCard, columnId: sourceColId });
-  };
+    const fromCol    = source.droppableId
+    const toCol      = destination.droppableId
+    const cardId     = Number(draggableId)
 
-  const handleDragOver = (event) => {
-    const { active, over } = event;
-
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    let activeColumnId = findCardColumn(activeId);
-    let overColId = findCardColumn(overId);
-
-    if (!overColId) overColId = overId;
-
-    if (!activeColumnId || !overColId) return;
-
-    if (activeColumnId !== overColId) {
-      const activeCard = cardsMap[activeColumnId]?.find((c) => c.id.toString() === activeId);
-      if (!activeCard) return;
-
-      setCardsMap((prev) => {
-        const newSource = prev[activeColumnId].filter((c) => c.id.toString() !== activeId);
-        const newTarget = [...(prev[overColId] || [])];
-        const overIndex = newTarget.findIndex((c) => c.id.toString() === overId);
-
-        if (overIndex === -1) newTarget.push(activeCard);
-        else newTarget.splice(overIndex, 0, activeCard);
-
-        return {
-          ...prev,
-          [activeColumnId]: newSource,
-          [overColId]: newTarget,
-        };
-      });
-
-      setOverColumnId(overColId);
-    } else {
-      const columnCards = cardsMap[activeColumnId];
-      const oldIndex = columnCards.findIndex((c) => c.id.toString() === activeId);
-      const newIndex = columnCards.findIndex((c) => c.id.toString() === overId);
-
-      if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
-        setCardsMap((prev) => ({
-          ...prev,
-          [activeColumnId]: arrayMove(prev[activeColumnId], oldIndex, newIndex),
-        }));
-      }
-    }
-  };
-
-  const handleDragEnd = async (event) => {
-    const { active } = event;
-    setActiveCard(null);
-    if (!active) return;
-
-    const activeId = active.id;
-    const oldColumnId = activeCard?.columnId;
-    const newColumnId = overColumnId || oldColumnId;
-
-    if (!oldColumnId || !newColumnId) return;
-
-    if (oldColumnId !== newColumnId) {
+    if (fromCol === toCol) {
+      const newList = reorderList(
+        cardsMap[fromCol],
+        source.index,
+        destination.index
+      )
+      setCardsMap(m => ({ ...m, [fromCol]: newList }))
+      const reordered = newList.map((c, i) => ({ id: c.id, order: i }))
       try {
-        const newCards = cardsMap[newColumnId] || [];
-        const newOrder = newCards.findIndex((c) => c.id.toString() === activeId);
-
-        await moveCard(boardId, oldColumnId, activeId, newColumnId, newOrder);
-
-        const reordered = newCards.map((c, idx) => ({ id: c.id, order: idx }));
-        await reorderCards(boardId, newColumnId, reordered);
-      } catch (err) {
-        console.error('Move sırasında hata:', err);
+        await reorderCards(boardId, Number(fromCol), reordered)
+      } catch (e) {
+        console.error(e)
       }
-    } else {
-      try {
-        const sourceCards = cardsMap[oldColumnId];
-        const reordered = sourceCards.map((c, idx) => ({ id: c.id, order: idx }));
-        await reorderCards(boardId, oldColumnId, reordered);
-      } catch (err) {
-        console.error('Reorder sırasında hata:', err);
-      }
+      return
     }
 
-    setOverColumnId(null);
-  };
+    const sourceList = Array.from(cardsMap[fromCol])
+    const [moved]    = sourceList.splice(source.index, 1)
+    const destList   = Array.from(cardsMap[toCol] || [])
+    destList.splice(destination.index, 0, moved)
 
-  const handleDragCancel = () => {
-    setActiveCard(null);
-    setOverColumnId(null);
-  };
+    setCardsMap(m => ({
+      ...m,
+      [fromCol]: sourceList,
+      [toCol]:   destList,
+    }))
 
-  const handleDragMove = (event) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-
-    const pointerX =
-      event.pointerCoordinates?.x ??
-      event.activatorEvent?.clientX ??
-      event.activatorEvent?.touches?.[0]?.clientX;
-
-    if (pointerX == null) return;
-
-    const { left, right } = container.getBoundingClientRect();
-    const threshold = 60;
-    const speed = 10;
-
-    if (pointerX > right - threshold) {
-      container.scrollLeft += speed;
-    } else if (pointerX < left + threshold) {
-      container.scrollLeft -= speed;
+    try {
+      await moveCard(
+        boardId,
+        Number(fromCol),
+        cardId,
+        Number(toCol),
+        destination.index
+      )
+      const reordered = destList.map((c, i) => ({ id: c.id, order: i }))
+      await reorderCards(boardId, Number(toCol), reordered)
+    } catch (e) {
+      console.error(e)
     }
-  };
-
-
+  }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-      onDragCancel={handleDragCancel}
-    >
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Pano: {boardId}</h1>
+    <div className="p-4 h-full flex flex-col">
+      <h1 className="text-2xl font-bold mb-4">Pano: {boardId}</h1>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
-        <div className="flex gap-2 mb-6">
-          <Input
-            placeholder="Yeni liste başlığı"
-            value={newColumnTitle}
-            onChange={(e) => setNewColumnTitle(e.target.value)}
-          />
-          <Button onClick={handleCreateColumn}>Liste Ekle</Button>
-        </div>
-
-        <div
-          ref={scrollContainerRef}
-          className="flex items-start gap-6 overflow-x-auto snap-x scroll-smooth snap-mandatory scroll-mx-2.5 touch-pan-x">
-          {columns.map((col) => (
-            <motion.div
-              key={col.id}
-              className='snap-center w-full flex-shrink-0 md:flex-initial md:min-w-80'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Column
-                key={col.id}
-                column={col}
-                cards={cardsMap[col.id] || []}
-                boardId={boardId}
-                onAddCard={loadBoard}
-              />
-            </motion.div>
-          ))}
-        </div>
+      <div className="flex gap-2 mb-6">
+        <Input
+          placeholder="Yeni liste başlığı"
+          value={newColumnTitle}
+          onChange={e => setNewColumnTitle(e.target.value)}
+        />
+        <Button onClick={handleCreateColumn}>Liste Ekle</Button>
       </div>
 
-      <DragOverlay>
-        {activeCard ? (
-          <CardItem
-            card={activeCard}
-            isOverlay={true}
-            onDelete={() => {}}
-          />
-        ) : null}
-      </DragOverlay>
-    </DndContext>
-  );
+      <DragDropContext
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+      >
+        <div
+          className={`
+            flex items-start gap-6 overflow-x-auto
+            ${isDragging ? '' : 'snap-x snap-mandatory'} 
+            scroll-auto snap-center snap-mandatory
+          `}
+        >
+          {columns.map(col => (
+            <Droppable
+              key={col.id}
+              droppableId={col.id.toString()}
+              direction="vertical"
+            >
+              {provided => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="snap-center w-full md:min-w-[300px] flex-shrink-0 md:flex-initial px-2"
+                >
+                  <Column
+                    column={col}
+                    cards={cardsMap[col.id] || []}
+                    boardId={boardId}
+                    onAddCard={loadBoard}
+                  />
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          ))}
+        </div>
+      </DragDropContext>
+    </div>
+  )
 }
