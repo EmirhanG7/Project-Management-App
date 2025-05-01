@@ -1,58 +1,73 @@
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-function getToken() {
-  return localStorage.getItem('token');
+async function getCsrfToken() {
+  const res = await fetch(`${API_BASE}/csrf-token`, {
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('CSRF token alınamadı');
+  const { csrfToken } = await res.json();
+  return csrfToken;
 }
 
+
 async function fetchApi(url, options = {}) {
-  const token = getToken();
-  const res = await fetch(API_BASE + url, {
+  const method = (options.method || 'GET').toUpperCase();
+  const isStateChanging = ['POST','PUT','PATCH','DELETE'].includes(method);
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (isStateChanging) {
+    const csrfToken = await getCsrfToken();
+    headers['X-CSRF-Token'] = csrfToken;
+  }
+
+  const res = await fetch(`${API_BASE}${url}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
+    method,
+    headers,
+    credentials: 'include',
   });
 
   if (!res.ok) {
-    const error = await res.json().catch(() => ({}));
-    throw new Error(error.error || res.statusText);
+    const errorBody = await res.json().catch(() => ({}));
+    throw new Error(errorBody.error || res.statusText);
   }
 
   if (res.status === 204) return null;
   return res.json();
 }
 
-
-export const register = (data) =>
+export const register = data =>
   fetchApi('/auth/register', {
     method: 'POST',
     body: JSON.stringify(data),
   });
 
-export const login = (data) =>
+export const login = data =>
   fetchApi('/auth/login', {
     method: 'POST',
     body: JSON.stringify(data),
   });
 
+export const logout = () =>
+  fetchApi('/auth/logout', {
+    method: 'POST',
+  });
+
 export const getMe = () =>
   fetchApi('/auth/me');
 
-
+// --- Boards
 export const getBoards = () =>
   fetchApi('/boards');
 
-export const createBoard = (title) =>
+export const createBoard = title =>
   fetchApi('/boards', {
     method: 'POST',
     body: JSON.stringify({ title }),
-  });
-
-export const deleteBoard = (id) =>
-  fetchApi(`/boards/${id}`, {
-    method: 'DELETE',
   });
 
 export const updateBoard = (id, title) =>
@@ -61,8 +76,12 @@ export const updateBoard = (id, title) =>
     body: JSON.stringify({ title }),
   });
 
+export const deleteBoard = id =>
+  fetchApi(`/boards/${id}`, {
+    method: 'DELETE',
+  });
 
-export const getColumns = (boardId) =>
+export const getColumns = boardId =>
   fetchApi(`/boards/${boardId}/columns`);
 
 export const createColumn = (boardId, data) =>
@@ -95,55 +114,24 @@ export const updateCard = (boardId, columnId, cardId, data) =>
   fetchApi(`/boards/${boardId}/columns/${columnId}/cards/${cardId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
-});
+  });
 
-export const deleteCard = async (boardId, columnId, cardId) => {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${import.meta.env.VITE_API_BASE}/boards/${boardId}/columns/${columnId}/cards/${cardId}`, {
+export const moveCard = (boardId, columnId, cardId, newColumnId, order) =>
+  fetchApi(
+    `/boards/${boardId}/columns/${columnId}/cards/${cardId}/move`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ newColumnId, order }),
+    }
+  );
+
+export const deleteCard = (boardId, columnId, cardId) =>
+  fetchApi(`/boards/${boardId}/columns/${columnId}/cards/${cardId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
   });
 
-  if (!res.ok) throw new Error('Kart silinemedi.');
-
-  return res.json();
-};
-
-export const moveCard = async (boardId, columnId, cardId, newColumnId, order) => {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/boards/${boardId}/columns/${columnId}/cards/${cardId}/move`, {
+export const reorderCards = (boardId, columnId, cardsList) =>
+  fetchApi(`/boards/${boardId}/columns/${columnId}/cards/reorder`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ newColumnId, order }),
-  });
-
-  if (!res.ok) throw new Error('Kart taşınamadı.');
-  return res.json();
-};
-
-
-export const reorderCards = async (boardId, columnId, cardsList) => {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${API_BASE}/boards/${boardId}/columns/${columnId}/cards/reorder`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
     body: JSON.stringify(cardsList),
   });
-
-  if (!res.ok) throw new Error('Kart sıralaması güncellenemedi.');
-  return res.json();
-};
-
-
-
-
-

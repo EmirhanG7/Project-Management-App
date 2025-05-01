@@ -1,13 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { logout } from '../api.js'
 
 export default function Layout() {
     
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    await logout()
     navigate('/login');
   };
 
