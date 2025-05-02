@@ -16,22 +16,10 @@ import { handleGeneralError } from './middleware/errorHandler.js';
 dotenv.config();
 const app = express();
 
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
-  : [];
-
-if (!allowedOrigins.length) {
-  console.warn('CORS_ORIGINS env değişkeni boş veya tanımsız.');
-}
+const CORS_ORIGINS = process.env.CORS_ORIGINS;
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS engellendi: ${origin}`));
-    }
-  },
+  origin: CORS_ORIGINS,
   credentials: true
 }));
 
@@ -40,7 +28,7 @@ app.use(cookieParser());
 app.use(csurf({
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     sameSite: 'Strict'
   },
   ignoreMethods: ['GET','HEAD','OPTIONS']
