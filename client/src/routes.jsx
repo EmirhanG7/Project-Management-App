@@ -4,6 +4,7 @@ import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import BoardsPage from './pages/Boards';
 import BoardPage from './pages/Board';
+import VerifyEmail from "./pages/VerifyEmail.jsx";
 import { Navigate } from 'react-router-dom';
 
 const routes = [
@@ -12,6 +13,7 @@ const routes = [
     children: [
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
+      { path: '/verify-email', element: <VerifyEmail /> },
       {
         path: '/',
         element: <PrivateRoute />,

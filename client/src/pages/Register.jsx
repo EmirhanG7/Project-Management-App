@@ -4,25 +4,25 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Link } from 'react-router-dom';
-import {Loader2} from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       setLoading(true);
-      const { token } = await register(form);
-      localStorage.setItem('token', token);
+      const { message } = await register(form);
       setLoading(false);
-      navigate('/boards');
+      navigate('/login', { state: { info: message, email: form.email } });
     } catch (err) {
-      setError(err.message);
       setLoading(false);
+      setError(err.message);
     }
   };
 
@@ -35,32 +35,24 @@ export default function RegisterPage() {
         type="text"
         placeholder="İsim"
         value={form.name}
-        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+        onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
       />
-
       <Input
         type="email"
         placeholder="Email"
         value={form.email}
-        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+        onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
       />
-
       <Input
         type="password"
         placeholder="Şifre"
         value={form.password}
-        onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+        onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
       />
 
-      {
-        loading ?
-          <Button disabled>
-            <Loader2 className="animate-spin" />
-          </Button>
-          :
-          <Button type='submit' className='w-full'>
-            Kayıt Ol
-          </Button>
+      {loading
+        ? <Button disabled><Loader2 className="animate-spin" /></Button>
+        : <Button type="submit" className="w-full">Kayıt Ol</Button>
       }
 
       <Button variant="outline" asChild className="w-full justify-center text-sm">

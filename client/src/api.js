@@ -46,6 +46,16 @@ export const register = data =>
     body: JSON.stringify(data),
   });
 
+export const verifyEmail = token =>
+  fetchApi(`/auth/verify-email?token=${encodeURIComponent(token)}`
+  );
+
+export const resendVerification = email =>
+  fetchApi('/auth/resend-verification', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+
 export const login = data =>
   fetchApi('/auth/login', {
     method: 'POST',
@@ -60,7 +70,8 @@ export const logout = () =>
 export const getMe = () =>
   fetchApi('/auth/me');
 
-// --- Boards
+
+
 export const getBoards = () =>
   fetchApi('/boards');
 
@@ -81,6 +92,8 @@ export const deleteBoard = id =>
     method: 'DELETE',
   });
 
+
+
 export const getColumns = boardId =>
   fetchApi(`/boards/${boardId}/columns`);
 
@@ -100,6 +113,9 @@ export const deleteColumn = (boardId, columnId) =>
   fetchApi(`/boards/${boardId}/columns/${columnId}`, {
     method: 'DELETE',
   });
+
+
+
 
 export const getCards = (boardId, columnId) =>
   fetchApi(`/boards/${boardId}/columns/${columnId}/cards`);
