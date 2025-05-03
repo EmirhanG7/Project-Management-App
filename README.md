@@ -1,148 +1,185 @@
-
 # Project Management App
 
-Bu proje Trello ve Notion benzeri bir görev yönetim uygulamasıdır. Kullanıcılar kendi panolarını (board), listelerini (column) ve kartlarını (card) oluşturabilir, kartları kolonlar arasında veya kolon içinde sürükleyerek taşıyabilir ve sıralamasını değiştirebilir.
+Trello ve Notion benzeri bir görev yönetim uygulamasıdır. Kullanıcılar kendi **panolarını** (boards), **listelerini** (columns) ve **kartlarını** (cards) oluşturabilir; kartları sürükle-bırak ile hem aynı listede hem de listeler arasında taşıyabilir ve sıralamasını güncelleyebilir.
 
-Frontend tarafında React 19, Vite, Tailwind CSS 4, shadcn/ui bileşenleri, Framer Motion ve dnd-kit kullanılmıştır. Backend tarafında Node.js, Express.js, PostgreSQL ve Drizzle ORM ile JWT kimlik doğrulama mekanizması kurulmuştur.
+---
 
-Proje iki ana klasörden oluşur:
-- **client/**: React ile yazılmış frontend uygulaması
-- **server/**: Node.js ve Express ile yazılmış API sunucusu
+## 🚀 Öne Çıkan Özellikler
 
-Projeyi çalıştırmak için önce repoyu klonlayın:
+- **Kullanıcı Yönetimi**
+    - Kayıt & e-posta doğrulama (24 saat geçerli, tek kullanımlık token)
+    - JWT tabanlı kimlik doğrulama; token, `HttpOnly`, `SameSite=Strict` cookie’de saklanır
+    - Login, Logout ve “Ben Kimim?” (`/auth/me`) endpoint’leri
+
+- **Güvenlik**
+    - CSRF koruması: POST/PUT/PATCH/DELETE isteklerde `csurf` middleware ve `X-CSRF-Token` header
+    - CORS: yalnızca `CORS_ORIGINS` altında izin verilen origin’lerden istek kabulü
+
+- **Panolar & Ortak Çalışma**
+    - Kişisel pano oluşturma, silme
+    - Pano sahipleri e-posta ile üye davet edebilir (`/boards/:id/invite`)
+    - Davet edilen kullanıcılar pane katılır, üye listesini görebilir
+
+- **Listeler & Kartlar**
+    - Board’a liste (column) ekleme, silme
+    - Liste içinde kart (card) ekleme, silme
+    - Kartları sürükle-bırak ile sıralama (`order`) ve kolonlar arası taşıma
+    - Tüm değişiklikler backend’e anında yansır
+
+- **Yorumlar**
+    - Her karta yorum ekleme ve listeleme (`/cards/:cardId/comments`)
+
+---
+
+## 🔧 Kurulum & Çalıştırma
+
+### 1. Repo’yu Klonlayın
 
 ```bash
 git clone https://github.com/emirhang7/project-management-app.git
 cd project-management-app
 ```
 
-### Backend (server/) kurulumu için:
+### 2. Backend (server/) Kurulumu
 
 ```bash
 cd server
 npm install
 ```
 
-Sonrasında `.env` dosyası oluşturun ve içine aşağıdaki bilgileri yazın:
+#### server/.env
 
 ```env
-DATABASE_URL=postgresql://kullanici_adi:sifre@localhost:5432/veritabani_adi
-JWT_SECRET=senin_secret_keyin
+DATABASE_URL=postgresql://<kullanici>:<sifre>@localhost:5432/<veritabani>
+JWT_SECRET=<jwt_secret_key>
 PORT=4000
-```
 
-Daha sonra backend sunucusunu başlatın:
+# SMTP (ör. Gmail App Password veya profesyonel SMTP)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=<smtp_user_email>
+SMTP_PASS=<smtp_app_password>
+
+# Frontend origin ve verify-email linki için
+CORS_ORIGINS=http://localhost:5173
+```
 
 ```bash
 npm run dev
 ```
 
-Sunucu çalışmaya başlayacak ve `http://localhost:4000` adresinde API servisi verecektir.
+- API base URL: `http://localhost:4000/api`
 
-### Frontend (client/) kurulumu için:
+### 3. Frontend (client/) Kurulumu
 
 ```bash
 cd ../client
 npm install
-'Paket uyumluluk sorunu olursa =>'
-npm install --legacy-peer-deps 
+# Peer-dependency çatışması olursa:
+npm install --legacy-peer-deps
 ```
 
-Ardından yine `client` dizini içinde `.env` dosyası oluşturup içine aşağıdaki bilgileri yazın:
+#### client/.env
 
 ```env
 VITE_API_BASE=http://localhost:4000/api
 ```
 
-Frontend uygulamasını başlatmak için:
-
 ```bash
 npm run dev
 ```
 
-Uygulama `http://localhost:5173` adresinde açılacaktır.
+- Uygulama URL: `http://localhost:5173`
 
 ---
 
-### Özellikler
+## 🔄 E-Posta Doğrulama Akışı
 
-- Kullanıcı kayıt ve giriş işlemleri (JWT token ile)
-- Kişisel panolar oluşturma
-- Panolara kolonlar ekleyebilme
-- Kolonlara kartlar ekleyebilme
-- Kartları aynı kolon içinde sıralayabilme
-- Kartları kolonlar arasında taşıyabilme
-- Kart sıralamalarının veritabanında güncellenmesi
-- Kart ve kolon silme işlemleri
-- Responsive, mobil uyumlu ve modern UI
-- Framer Motion ve dnd-kit ile akıcı sürükleme animasyonları
+1. **Kayıt (`POST /auth/register`)**
+    - Kullanıcı bilgileri alınır, `verificationToken` ve `tokenExpiresAt` oluşturulur.
+    - `verify-email?token=&email=` şeklinde link, e-posta ile gönderilir.
+
+2. **Doğrulama (`GET /auth/verify-email`)**
+    - Token ve e-posta kontrol edilir, `emailVerified` alanı `true` olur.
+    - Başarılı doğrulama sonrası frontend’de kullanıcıya bilgi gösterilir.
+
+3. **Yeniden Gönderme (`POST /auth/resend-verification`)**
+    - Token süresi dolmuşsa ya da kullanıcı linki kaybetmişse, isteğe göre yeni link atılır.
 
 ---
 
-### Proje Yapısı
+## 🔑 Kimlik Doğrulama & CSRF
+
+- **Login (`POST /auth/login`)**
+    - Onaylı kullanıcılar için JWT oluşturulur ve `HttpOnly`, `SameSite=Strict` cookie’de saklanır.
+
+- **CSRF Koruması**
+    - `GET /csrf-token` endpoint’i, hem çerez hem JSON olarak token döner.
+    - Frontend `api.js` içindeki `getCsrfToken()` fonksiyonu, state-changing isteklerden önce otomatik CSRF token ekler.
+
+- **Logout (`POST /auth/logout`)**
+    - Cookie temizlenir.
+
+---
+
+## 📌 Kullanım Notları
+
+- Backend ve frontend ayrı terminallerde çalıştırılır.
+- Local geliştirmede `http://localhost:4000` (API) ve `http://localhost:5173` (UI) kullanılır.
+- Üretimde `CORS_ORIGINS` ve `VITE_API_BASE` değerlerinizi canlı domain’lere göre güncelleyin.
+- Yeni özellikler ve iyileştirmeler eklemeye devam edilecektir.
+
+---
+
+## 📁 Proje Yapısı
 
 ```
 project-management-app/
-├── client/                      # Frontend uygulaması (React + Vite)
-│   ├── public/                  # Vite public dizini
+├── client/                       # Frontend (React + Vite + Tailwind CSS)
+│   ├── public/
 │   ├── src/
-│   │   ├── components/          # Ortak bileşenler (CardItem, Column, ConfirmModal vs.)
-│   │   ├── pages/               # React sayfaları
-│   │   ├── api.js               # API işlemlerinin yapıldığı dosya
+│   │   ├── api.js                # Tüm API çağrıları; fetchApi, getCsrfToken, auth, boards, columns, cards, comments…
+│   │   ├── components/           # UI bileşenleri (shadcn/ui wrapper’leri)
+│   │   ├── pages/                # Sayfa bileşenleri
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── RegisterPage.jsx
+│   │   │   ├── VerifyEmail.jsx
+│   │   │   ├── BoardDetail.jsx
+│   │   │   └── CardDetail.jsx
 │   │   ├── App.jsx
 │   │   ├── main.jsx
-│   │   └── index.css            # Tailwind CSS ayarları
-│   ├── .env                     # VITE_API_BASE içeren env dosyası
+│   │   └── index.css             # Tailwind ayarları
+│   ├── .env                      # VITE_API_BASE
 │   ├── tailwind.config.js
 │   ├── postcss.config.js
 │   └── vite.config.js
 │
-├── server/                      # Backend uygulaması (Express.js + Drizzle ORM)
+├── server/                       # Backend (Express.js + Drizzle ORM)
 │   ├── db/
-│   │   ├── index.js             # Drizzle ve veritabanı bağlantısı
-│   │   └── schema.js            # PostgreSQL tablo şemaları
-│   ├── controllers/             # Tüm controller dosyaları (auth, board, column, card)
-│   ├── routes/                  # Express route dosyaları (auth, boards, columns, cards)
-│   ├── middleware/              # Kimlik doğrulama middleware (JWT)
-│   ├── .env                     # DATABASE_URL, JWT_SECRET vs.
-│   ├── server.js                # Express app başlatıcı dosya
+│   │   ├── index.js              # Drizzle + PostgreSQL bağlantısı
+│   │   └── schema.js             # users, boards, columns, cards, comments tabloları
+│   ├── controllers/              # İş mantığı (register, login, verifyEmail, resendVerification, boards, columns, cards, comments)
+│   │   ├── authController.js
+│   │   ├── boardController.js
+│   │   ├── columnController.js
+│   │   ├── cardController.js
+│   │   └── commentController.js
+│   ├── middleware/               # Ara katmanlar
+│   │   ├── auth.js               # JWT doğrulama
+│   │   ├── csrfErrorHandler.js   # CSRF hatalarını işleme
+│   │   └── errorHandler.js       # Genel hata işleyici
+│   ├── routes/                   # HTTP route tanımları
+│   │   ├── auth.js               # /auth/register, /auth/verify-email, /auth/resend-verification, /auth/login, /auth/me, /auth/logout
+│   │   ├── boards.js             # /boards, /boards/:id/invite, /boards/:id/members
+│   │   ├── columns.js            # /boards/:boardId/columns
+│   │   ├── cards.js              # /boards/:boardId/columns/:columnId/cards
+│   │   └── comments.js           # /cards/:cardId/comments
+│   ├── utils/
+│   │   └── mailer.js             # Nodemailer transporter ve sendMail
+│   ├── .env                      # DATABASE_URL, JWT_SECRET, SMTP_*, CORS_ORIGINS
+│   ├── server.js                 # Express setup: cors, csurf, express.json, cookie-parser, route’lar
 │   └── package.json
 │
-├── README.md                      
-├── .gitignore                     
+├── README.md                     
+└── .gitignore                    
 ```
-
-`.gitignore` dosyası sayesinde aşağıdaki dosya ve klasörler repoya yüklenmeyecektir:
-- `node_modules/`
-- `.env`
-- `dist/`
-- `build/`
-
----
-
-### Notlar
-
-- Hem frontend hem backend klasörlerinde `npm install` komutu çalıştırılmalıdır.
-- Sunucu (server) ve istemci (client) ayrı ayrı başlatılır.
-- Server tarafında kimlik doğrulama JWT ile yapılır ve her API isteğinde token header ile gönderilmelidir.
-- Kullanıcı giriş yaptıktan sonra token `localStorage` içine kaydedilir ve her istek otomatik olarak bu token ile yapılır.
-- Kart sıralamaları hem frontend state üzerinde hem de backend veritabanı üzerinde canlı olarak güncellenir.
-- Eğer boş bir kolona kart taşımak istenirse veya yeni oluşturulan boş kolonlar varsa sürükleme sorunsuz şekilde yapılabilir.
-- Sıralama değişiklikleri kolonlar arası taşımalar veya kolon içi kart kaydırmalarında ayrı ayrı API çağrılarıyla kaydedilir.
-
----
-
-### Yüklemek için:
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/kullanici-adi/project-management-app.git
-git push -u origin main
-```
-
----
-
-### Uygulama geliştirilme devam etmektedir.
