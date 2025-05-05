@@ -8,6 +8,7 @@ import ConfirmModal from './ConfirmModal'
 import CardItem from './CardItem'
 import {Loader2} from "lucide-react";
 import SubmitButton from "@/components/SubmitButton.jsx";
+import CreateButton from "@/components/CreateButton.jsx";
 
 export default function Column({ column, cards = [], onAddCard, boardId }) {
   const [newCardTitle, setNewCardTitle] = useState('')
@@ -17,13 +18,12 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
   const [selectedCardId, setSelectedCardId] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const handleCreateCard = async () => {
-    if (!newCardTitle.trim()) return setError('Kart başlığı boş olamaz.')
+  const handleCreateCard = async (title) => {
+    if (!title.trim()) return setError('Kart başlığı boş olamaz.')
     try {
       setLoading(true)
-      await createCard(boardId, column.id, { title: newCardTitle })
+      await createCard(boardId, column.id, { title})
       onAddCard()
-      setNewCardTitle('')
       setError('')
       setLoading(false)
     } catch {
@@ -67,7 +67,7 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
       />
 
       <div className="flex justify-between items-center mb-4 border-b pb-2">
-        <h2 className="font-bold">{column.title}</h2>
+        <h2 className="font-bold text-lg ">{column.title}</h2>
         <Button
           variant="destructive"
           size="icon"
@@ -109,15 +109,7 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
         )}
       </div>
 
-      <div className="flex flex-col space-y-2">
-        <Input
-          placeholder="Yeni kart adı"
-          value={newCardTitle}
-          onChange={(e) => setNewCardTitle(e.target.value)}
-        />
-        <SubmitButton loading={loading} error={error} submit={handleCreateCard} title="Kart Ekle" />
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-      </div>
+      <CreateButton title='Kart' loading={loading} submit={handleCreateCard} />
     </Card>
   )
 }

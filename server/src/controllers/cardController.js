@@ -70,8 +70,8 @@ export async function moveCard(req, res) {
     const { boardId, cardId } = req.params;
     const { newColumnId, order } = req.body;
 
-    console.log('MOVE CARD API - Params:', req.params);
-    console.log('MOVE CARD API - Body:', req.body);
+    // console.log('MOVE CARD API - Params:', req.params);
+    // console.log('MOVE CARD API - Body:', req.body);
 
     if (!newColumnId || isNaN(newColumnId)) {
       console.log('MOVE CARD API - HATA: Geçersiz newColumnId');

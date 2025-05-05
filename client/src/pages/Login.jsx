@@ -4,12 +4,14 @@ import { login, resendVerification } from '../api';
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Loader2 } from "lucide-react";
+import {Label} from "@/components/ui/label.js";
+import {Checkbox} from "@/components/ui/checkbox.js";
 
 export default function LoginPage() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: state?.email || '', password: '' });
+  const [form, setForm] = useState({ email: state?.email || '', password: '', remember: false });
   const [error, setError] = useState('');
   const [info, setInfo] = useState(state?.info || '');
   const [loading, setLoading] = useState(false);
@@ -22,7 +24,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       const { token } = await login(form);
-      localStorage.setItem('token', token);
+      // localStorage.setItem('token', token);
       setLoading(false);
       navigate('/boards');
     } catch (err) {
@@ -71,9 +73,16 @@ export default function LoginPage() {
         value={form.password}
         onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
       />
+      <div className="flex items-center space-x-2">
+        <Checkbox
+          checked={form.remember}
+          onCheckedChange={(value) => setForm(f => ({ ...f, remember: value === true }))}
+          id="terms" />
+        <Label htmlFor="terms">Beni Hatırla</Label>
+      </div>
 
       {loading
-        ? <Button disabled><Loader2 className="animate-spin" /></Button>
+        ? <Button className='w-full' disabled><Loader2 className="animate-spin" /></Button>
         : <Button type="submit" className="w-full">Giriş Yap</Button>
       }
 

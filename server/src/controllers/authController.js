@@ -101,7 +101,7 @@ export async function verifyEmail(req, res, next) {
 }
 
 export async function login(req, res) {
-  const { email, password } = req.body;
+  const { email, password, remember } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Eksik alan var.' });
   }
@@ -122,10 +122,18 @@ export async function login(req, res) {
     return res.status(401).json({ error: 'Email veya şifre yanlış.' });
   }
 
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
-  res
-    .cookie('accessToken', token, { ...cookieOptions, maxAge: 7*24*60*60*1000 })
-    .json({ user: { id: user.id, email: user.email, name: user.name } });
+  if (remember) {
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1d' });
+    res
+      .cookie('accessToken', token, { ...cookieOptions, maxAge: 24*60*60*1000 })
+      .json({ user: { id: user.id, email: user.email, name: user.name } });
+  } else {
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '15m' });
+    res
+      .cookie('accessToken', token, { ...cookieOptions, maxAge: 15*60*1000 })
+      .json({ user: { id: user.id, email: user.email, name: user.name } });
+  }
+
 }
 
 export async function me(req, res) {

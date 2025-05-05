@@ -75,6 +75,8 @@ export const getMe = () =>
 export const getBoards = () =>
   fetchApi('/boards');
 
+export const getBoardById = id => fetchApi(`/boards/${id}`);
+
 export const createBoard = title =>
   fetchApi('/boards', {
     method: 'POST',
