@@ -6,6 +6,8 @@ import { Button } from "../components/ui/button";
 import { Loader2 } from "lucide-react";
 import {Label} from "@/components/ui/label.js";
 import {Checkbox} from "@/components/ui/checkbox.js";
+import {useDispatch} from "react-redux";
+import {setUser} from "@/store/authSlice.js";
 
 export default function LoginPage() {
   const { state } = useLocation();
@@ -17,13 +19,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [resendMsg, setResendMsg] = useState('');
 
+  const dispatch = useDispatch();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setResendMsg('');
     try {
       setLoading(true);
-      const { token } = await login(form);
+      const { user } = await login(form);
+      dispatch(setUser(user))
       // localStorage.setItem('token', token);
       setLoading(false);
       navigate('/boards');

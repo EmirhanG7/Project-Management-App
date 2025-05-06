@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Button} from "@/components/ui/button.js";
 import {
   DropdownMenu,
@@ -7,14 +7,26 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.js";
 import { UserCog, Settings, LogOut } from 'lucide-react';
+import {useDispatch, useSelector} from "react-redux";
+import {logout} from "@/api.js";
+import {clearUser} from "@/store/authSlice.js";
 
-export default function Header({user, onLogout}) {
+export default function Header() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleLogout = async () => {
+    await logout()
+    dispatch(clearUser())
+    navigate('/login');
+  };
+  const user = useSelector(state => state.auth.user)
 
 
   return (
-    <header className="flex items-center justify-center px-6 md:px-12 py-4 bg-white shadow">
-      <div className='flex justify-between w-full'>
-        <Link to="/" className="text-xl font-bold">
+    <header className="px-6 md:px-12 py-4 bg-white shadow">
+      <div className={`flex w-full ${user ? 'justify-between' : 'justify-center'} `}>
+        <Link to="/" className="text-xl font-bold text-center">
           Project Management App
         </Link>
         {user &&
@@ -40,7 +52,7 @@ export default function Header({user, onLogout}) {
                   <Settings />
                   <Link to="#">Hesap ayarları</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onLogout} >
+                <DropdownMenuItem onClick={handleLogout} >
                   <LogOut />
                   <span>Log out</span>
                 </DropdownMenuItem>
