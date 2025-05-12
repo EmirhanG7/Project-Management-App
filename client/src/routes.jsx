@@ -4,7 +4,8 @@ import LoginPage from './pages/Login';
 import RegisterPage from './pages/Register';
 import BoardsPage from './pages/Boards';
 import BoardPage from './pages/Board';
-import VerifyEmail from "./pages/VerifyEmail.jsx";
+import VerifyEmail from "./pages/VerifyEmail";
+import AccountSettings from "./pages/AccountSettings";
 import { Navigate } from 'react-router-dom';
 
 const routes = [
@@ -21,6 +22,7 @@ const routes = [
           { index: true, element: <Navigate to="boards" /> },
           { path: 'boards', element: <BoardsPage /> },
           { path: 'boards/:boardId', element: <BoardPage /> },
+          { path: 'settings', element: <AccountSettings /> },
         ],
       },
     ],

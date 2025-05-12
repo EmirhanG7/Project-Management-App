@@ -198,3 +198,55 @@ export async function resendVerification(req, res, next) {
     next(err);
   }
 }
+
+
+export async function updateProfile(req, res, next) {
+  try {
+    const userId = req.userId
+    const { name } = req.body
+    if (!name) return res.status(400).json({ error: 'İsim boş olamaz.' })
+
+    await db
+      .update(users)
+      .set({ name })
+      .where(eq(users.id, userId))
+
+    const [updated] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+
+    res.json({ user: { id: updated.id, email: updated.email, name: updated.name } })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export async function changePassword(req, res, next) {
+  try {
+    const userId = req.userId
+    const { currentPassword, newPassword } = req.body
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Mevcut ve yeni şifre gerekli.' })
+    }
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash)
+    if (!valid) {
+      return res.status(401).json({ error: 'Mevcut şifre yanlış.' })
+    }
+
+    const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS)
+    await db
+      .update(users)
+      .set({ passwordHash: newHash })
+      .where(eq(users.id, userId))
+
+    res.json({ message: 'Şifreniz başarıyla güncellendi.' })
+  } catch (err) {
+    next(err)
+  }
+}

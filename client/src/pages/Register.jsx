@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Loader2 } from "lucide-react";
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -15,6 +15,10 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if(form.password !== form.confirmPassword) {
+      setError('Şifreler Eşleşmiyor!');
+      return
+    }
     try {
       setLoading(true);
       const { message } = await register(form);
@@ -48,6 +52,12 @@ export default function RegisterPage() {
         placeholder="Şifre"
         value={form.password}
         onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
+      />
+      <Input
+        type="password"
+        placeholder="Şifre (tekrar)"
+        value={form.confirmPassword}
+        onChange={(e) => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
       />
 
       {loading

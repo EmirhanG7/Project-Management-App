@@ -70,6 +70,18 @@ export const logout = () =>
 export const getMe = () =>
   fetchApi('/auth/me');
 
+export const updateProfile = data =>
+  fetchApi('/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+
+export const changePassword = data =>
+  fetchApi('/auth/me/password', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+
 
 
 export const getBoards = () =>

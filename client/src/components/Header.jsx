@@ -50,11 +50,16 @@ export default function Header() {
               <DropdownMenuGroup>
                 <DropdownMenuItem>
                   <Settings />
-                  <Link to="#">Hesap ayarları</Link>
+                  <Link className='w-full' to="/settings">
+                    Hesap ayarları
+                  </Link>
+
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} >
                   <LogOut />
-                  <span>Log out</span>
+                  <span className='w-full'>
+                    Log out
+                  </span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
