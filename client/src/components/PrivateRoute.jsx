@@ -21,10 +21,10 @@ export default function PrivateRoute({ redirectPath = '/login' }) {
       .catch(() => {
         setCheckingAuth(false);
       });
-  }, [dispatch]);
+  }, []);
 
   if (checkingAuth) {
-    return <div>Loading...</div>; // Asenkron işlem tamamlanana kadar yükleme ekranı göster
+    return <div>Loading...</div>;
   }
 
 

@@ -106,6 +106,15 @@ export const deleteBoard = id =>
     method: 'DELETE',
   });
 
+export const inviteToBoard = (boardId, email) =>
+  fetchApi(`/boards/${boardId}/invite`, {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+
+export const acceptInvite = token =>
+  fetchApi(`/boards/invitations/accept?token=${encodeURIComponent(token)}`)
+
 
 
 export const getColumns = boardId =>

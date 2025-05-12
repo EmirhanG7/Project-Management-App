@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react'
 import { useParams } from 'react-router-dom'
-import {getColumns, getCards, createColumn, moveCard, reorderCards, getBoardById} from '../api'
+import {getColumns, getCards, createColumn, moveCard, reorderCards, getBoardById, inviteToBoard} from '../api'
 import Column from '../components/Column'
 import { DragDropContext, Droppable } from '@hello-pangea/dnd'
 import CreateButton from "@/components/CreateButton.jsx";
@@ -21,6 +21,8 @@ export default function BoardPage() {
   const [error, setError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [inviteErr, setInviteErr] = useState('')
+  const [inviteMsg, setInviteMsg] = useState('')
 
   const containerRef = useRef(null)
   const initialLoaded = useRef(false)
@@ -138,10 +140,35 @@ export default function BoardPage() {
     }
   }
 
+  const handleInvite = async email => {
+    setInviteErr(''); setInviteMsg('')
+    try {
+      setLoading(true)
+      const { message } = await inviteToBoard(boardId, email)
+      setInviteMsg(message)
+    } catch (err) {
+      setInviteErr(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="py-4 h-full flex flex-col">
       <h1 className="text-2xl font-bold mb-4">{board.title}</h1>
       {error && <p className="text-red-500 mb-4">{error}</p>}
+      {inviteErr && <p className="text-red-500 mb-2">{inviteErr}</p>}
+      {inviteMsg && <p className="text-green-600 mb-2">{inviteMsg}</p>}
+
+      <div className="mb-4">
+        <CreateButton
+          title="Email ile Davet Et"
+          placeholder="Email adresi..."
+          loading={loading}
+          submitTitle="Davet Et"
+          submit={handleInvite}
+        />
+      </div>
 
       <DragDropContext
         onDragStart={onDragStart}
@@ -179,7 +206,7 @@ export default function BoardPage() {
             </Droppable>
           ))}
           <div className="snap-center w-full md:min-w-[300px] flex-shrink-0 md:flex-initial">
-            <CreateButton title='Liste' submit={handleCreateColumn} />
+            <CreateButton title='Yeni Liste Oluştur' placeholder='Yeni Liste Başlığı...' submitTitle='Oluştur' submit={handleCreateColumn} />
           </div>
         </div>
       </DragDropContext>

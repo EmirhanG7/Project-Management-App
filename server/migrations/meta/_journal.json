@@ -36,6 +36,20 @@
       "when": 1746224642142,
       "tag": "0004_brave_microbe",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1747062534306,
+      "tag": "0005_mushy_darkhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1747066728364,
+      "tag": "0006_late_the_santerians",
+      "breakpoints": true
     }
   ]
 }

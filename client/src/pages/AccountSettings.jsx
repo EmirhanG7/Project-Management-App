@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { updateProfile, changePassword } from '@/api'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
 import {useSelector} from "react-redux";
 import SubmitButton from "@/components/SubmitButton.jsx";
 
@@ -67,7 +65,6 @@ export default function AccountSettings() {
     <div className="max-w-md mx-auto space-y-8 mt-10">
       <h2 className="text-2xl font-bold">Hesap Ayarları</h2>
 
-      {/* 1) İsim Güncelle */}
       <form className="space-y-2">
         <label className="font-medium">Adınız</label>
         <Input
@@ -80,7 +77,6 @@ export default function AccountSettings() {
         <SubmitButton submit={handleProfile} title='Güncelle' loading={loadingProfile} />
       </form>
 
-      {/* 2) Şifre Değiştir */}
       <form className="space-y-2">
         <label className="font-medium">Mevcut Şifre</label>
         <Input

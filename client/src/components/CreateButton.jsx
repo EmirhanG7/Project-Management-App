@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {Loader2} from "lucide-react";
 
-export default function CreateButton({ title, submit, loading = false }) {
+export default function CreateButton({ title, placeholder, submit, submitTitle, loading = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
@@ -39,7 +39,7 @@ export default function CreateButton({ title, submit, loading = false }) {
               onClick={() => setIsExpanded(true)}
               className="w-full"
             >
-              {`Yeni ${title} Oluştur`}
+              {title}
             </Button>
           </motion.div>
         )}
@@ -57,7 +57,7 @@ export default function CreateButton({ title, submit, loading = false }) {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder={`Yeni ${title} Başlığı...`}
+              placeholder={placeholder}
               autoFocus
               className="mb-2"
             />
@@ -72,7 +72,7 @@ export default function CreateButton({ title, submit, loading = false }) {
                 </Button>
                 :
                 <Button disabled={inputValue === ""} onClick={handleAdd}>
-                  Oluştur
+                  {submitTitle}
                 </Button>
               }
             </div>

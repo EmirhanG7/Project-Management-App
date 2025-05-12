@@ -6,6 +6,7 @@ import BoardsPage from './pages/Boards';
 import BoardPage from './pages/Board';
 import VerifyEmail from "./pages/VerifyEmail";
 import AccountSettings from "./pages/AccountSettings";
+import AcceptInvite from "./pages/AcceptInvite";
 import { Navigate } from 'react-router-dom';
 
 const routes = [
@@ -23,6 +24,7 @@ const routes = [
           { path: 'boards', element: <BoardsPage /> },
           { path: 'boards/:boardId', element: <BoardPage /> },
           { path: 'settings', element: <AccountSettings /> },
+          { path: 'accept-invite', element: <AcceptInvite />}
         ],
       },
     ],

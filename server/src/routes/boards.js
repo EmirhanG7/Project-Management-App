@@ -5,6 +5,8 @@ import {
   getBoardById,
   updateBoard,
   deleteBoard,
+  inviteToBoard,
+  acceptInvite,
 } from '../controllers/boardController.js';
 import { verifyToken } from '../middleware/auth.js';
 
@@ -17,5 +19,10 @@ router.get('/', getBoards);
 router.get('/:id', getBoardById);
 router.put('/:id', updateBoard);
 router.delete('/:id', deleteBoard);
+
+router.post('/:boardId/invite', inviteToBoard)
+router.get('/invitations/accept', acceptInvite)
+
+
 
 export default router;

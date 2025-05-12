@@ -109,7 +109,7 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
         )}
       </div>
 
-      <CreateButton title='Kart' loading={loading} submit={handleCreateCard} />
+      <CreateButton title='Yeni Kart Oluştur' placeholder='Yeni Kart Başlığı...' submitTitle='Oluştur' loading={loading} submit={handleCreateCard} />
     </Card>
   )
 }
