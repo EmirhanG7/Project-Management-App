@@ -1,137 +1,189 @@
-import { db } from '../db/index.js';
-import {boardInvitations, boardMembers, boards, columns, users} from '../db/schema.js';
-import {eq, ne} from 'drizzle-orm';
-import {sendMail} from "../utils/mailer.js";
+import { db } from '../db/index.js'
+import {
+  boards,
+  boardMembers,
+  boardInvitations,
+  users,
+} from '../db/schema.js'
+import { eq, ne } from 'drizzle-orm'
+import { sendMail } from '../utils/mailer.js'
 import crypto from 'crypto'
 
-export async function createBoard(req, res) {
 
+export async function createBoard(req, res) {
   try {
-    const { title } = req.body;
-    const userId = req.userId;
-    if (!title) return res.status(400).json({ error: 'Title gerekli.' });
+    const { title } = req.body
+    const userId = req.userId
+    if (!title) {
+      return res.status(400).json({ error: 'Title gerekli.' })
+    }
 
     const [board] = await db
       .insert(boards)
       .values({ title, userId })
-      .returning();
+      .returning()
 
-    await db.insert(boardMembers).values({
-      boardId: board.id,
-      userId,
-      role: 'owner',
-    })
-
-    res.status(201).json(board);
+    res.status(201).json(board)
   } catch (err) {
     console.error(err)
   }
-
 }
 
-export async function getBoards(req, res, next) {
+export async function getBoards(req, res) {
   try {
     const userId = req.userId
 
-    const own = await db
-      .select()
+    const owned = await db
+      .select({ id: boards.id, title: boards.title })
       .from(boards)
       .where(eq(boards.userId, userId))
 
-    const shared = await db
-      .select({
-        id:    boards.id,
-        title: boards.title,
-        userId: boards.userId,
-      })
-      .from(boards)
-      .innerJoin(boardMembers, eq(boardMembers.boardId, boards.id))
-      .where(
-        eq(boardMembers.userId, userId),
-        ne(boards.userId, userId)
+    const ownerInvited = await db
+      .select({ id: boards.id, title: boards.title })
+      .from(boardMembers)
+      .innerJoin(
+        boards,
+        eq(boardMembers.boardId, boards.id)
       )
+      .where(eq(boards.userId, userId))
 
-    res.json({ own, shared })
+    const invited = await db
+      .select({ id: boards.id, title: boards.title })
+      .from(boardMembers)
+      .innerJoin(
+        boards,
+        eq(boardMembers.boardId, boards.id)
+      )
+      .where(eq(boardMembers.userId, userId))
+
+    const privateBoards = owned.filter(o =>
+      !ownerInvited.some(oi => oi.id === o.id)
+    )
+
+    const map = {}
+    ;[...ownerInvited, ...invited].forEach(b => {
+      map[b.id] = b
+    })
+    const sharedBoards = Object.values(map)
+
+    res.json({
+      private: privateBoards,
+      shared: sharedBoards,
+    })
   } catch (err) {
-    next(err)
+    console.error(err)
   }
 }
+
+
 
 export async function getBoardById(req, res) {
-  const { id } = req.params;
-  const userId = req.userId;
-  const [board] = await db
-    .select()
-    .from(boards)
-    .where(
-      eq(boards.id, Number(id)),
-      eq(boards.userId, userId)
-    );
-  if (!board) return res.status(404).json({ error: 'Board bulunamadı.' });
-  res.json(board);
+  try {
+    const { id } = req.params
+    const userId = req.userId
+
+    const [board] = await db
+      .select()
+      .from(boards)
+      .where(
+        eq(boards.id, Number(id)),
+        eq(boards.userId, userId)
+      )
+
+    if (!board) {
+      return res.status(404).json({ error: 'Board bulunamadı.' })
+    }
+
+    res.json(board)
+  } catch (err) {
+    console.error(err)
+  }
 }
+
 
 export async function updateBoard(req, res) {
-  const { id } = req.params;
-  const { title } = req.body;
-  const userId = req.userId;
-  const result = await db
-    .update(boards)
-    .set({ title })
-    .where(
-      eq(boards.id, Number(id)),
-      eq(boards.userId, userId)
-    )
-    .returning();
-  if (!result.length) return res.status(404).json({ error: 'Board bulunamadı.' });
-  res.json(result[0]);
+  try {
+    const { id } = req.params
+    const { title } = req.body
+    const userId = req.userId
+
+    const result = await db
+      .update(boards)
+      .set({ title })
+      .where(
+        eq(boards.id, Number(id)),
+        eq(boards.userId, userId)
+      )
+      .returning()
+
+    if (!result.length) {
+      return res.status(404).json({ error: 'Board bulunamadı.' })
+    }
+
+    res.json(result[0])
+  } catch (err) {
+    console.error(err)
+  }
 }
+
 
 export async function deleteBoard(req, res) {
-  const { id } = req.params;
-  const userId = req.userId;
+  try {
+    const { id } = req.params
+    const userId = req.userId
 
-  const [board] = await db
-    .select()
-    .from(boards)
-    .where(
-      eq(boards.id, id),
-      eq(boards.userId, userId)
-    );
+    const [board] = await db
+      .select()
+      .from(boards)
+      .where(
+        eq(boards.id, Number(id)),
+        eq(boards.userId, userId)
+      )
 
-  if (!board) {
-    return res.status(404).json({ error: 'Board bulunamadı.' });
+    if (!board) {
+      return res.status(404).json({ error: 'Board bulunamadı.' })
+    }
+
+    await db
+      .delete(boards)
+      .where(
+        eq(boards.id, Number(id)),
+        eq(boards.userId, userId)
+      )
+
+    res.json({ message: 'Board silindi.', board })
+  } catch (err) {
+    console.error(err)
   }
-
-  await db
-    .delete(boards)
-    .where(
-      eq(boards.id, id),
-      eq(boards.userId, userId)
-    );
-
-  res.status(200).json({
-    message: 'Board silindi.',
-    board
-  });
 }
 
 
-export async function inviteToBoard(req, res, next) {
+export async function inviteToBoard(req, res) {
   try {
     const inviterId = req.userId
     const boardId   = Number(req.params.boardId)
     const { email } = req.body
 
-    const [ownerBoard] = await db
+    const [owner] = await db
       .select()
       .from(boards)
       .where(
         eq(boards.id, boardId),
         eq(boards.userId, inviterId)
       )
-    if (!ownerBoard) {
+    if (!owner) {
       return res.status(403).json({ error: 'Bu panoya davet gönderme yetkiniz yok.' })
+    }
+
+    const [invitee] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(
+        eq(users.email, email),
+        eq(users.emailVerified, true)
+      )
+    if (!invitee) {
+      return res.status(404).json({ error: 'Onaylı kullanıcı bulunamadı.' })
     }
 
     const token     = crypto.randomBytes(32).toString('hex')
@@ -157,13 +209,14 @@ export async function inviteToBoard(req, res, next) {
     `
     await sendMail({ to: email, subject: 'Pano Daveti', html })
 
-    res.json({ message: 'Davet e-postası gönderildi.' })
+    res.json({ message: 'Davet gönderildi.' })
   } catch (err) {
-    next(err)
+    console.error(err)
   }
 }
 
-export async function acceptInvite(req, res, next) {
+
+export async function acceptInvite(req, res) {
   try {
     const userId = req.userId
     const token  = req.query.token
@@ -204,6 +257,6 @@ export async function acceptInvite(req, res, next) {
 
     res.json({ message: 'Davet kabul edildi.', boardId: inv.boardId })
   } catch (err) {
-    next(err)
+    console.error(err)
   }
 }

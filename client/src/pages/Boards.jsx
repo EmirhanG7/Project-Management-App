@@ -23,9 +23,10 @@ export default function BoardsPage() {
   useEffect(() => {
     async function loadBoards() {
       try {
-        const { own, shared } = await getBoards()
-        setOwnBoards(own)
-        setSharedBoards(shared)
+        const res = await getBoards()
+        console.log(res)
+        setOwnBoards(res.private)
+        setSharedBoards(res.shared)
       } catch (err) {
         console.error(err)
         navigate('/login')
