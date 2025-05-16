@@ -3,7 +3,6 @@
     {
       "source": "/api/:path*",
       "destination": "https://project-management-app-production-6b7a.up.railway.app/api/:path*"
-      //"destination": "https://project-management-app-ikve.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
