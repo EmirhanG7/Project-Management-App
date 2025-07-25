@@ -12,7 +12,6 @@ import CreateButton from "@/components/CreateButton.jsx";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger
@@ -20,7 +19,7 @@ import {
 import {toast} from "sonner";
 
 
-export default function Column({ column, cards = [], onAddCard, boardId }) {
+export default function Column({ column, cards = [], setCardsMap, onAddCard, boardId, setColumns }) {
   const [newColumnTitle, setNewColumnTitle] = useState('')
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false)
   const [showDeleteCardModal, setShowDeleteCardModal] = useState(false)
@@ -28,8 +27,9 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
   const [loading, setLoading] = useState(false)
 
 
+
+
   const handleCreateCard = async (title) => {
-    if (!title.trim()) return setError('Kart başlığı boş olamaz.')
     try {
       setLoading(true)
       await createCard(boardId, column.id, { title})
@@ -45,7 +45,7 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
     try {
       await deleteColumn(boardId, column.id)
       setShowDeleteColumnModal(false)
-      toast.success('Liste silindi.')
+      toast.success(`'${column.title}' Listesi Silindi.`)
       onAddCard()
     } catch {
       toast.error('Liste silinemedi.')
@@ -54,21 +54,31 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
 
   const handleConfirmDeleteCard = async () => {
     try {
-      await deleteCard(boardId, column.id, selectedCardId)
+      const result = await deleteCard(boardId, column.id, selectedCardId)
       setShowDeleteCardModal(false)
       onAddCard()
-      toast.success('Kart silindi.')
+      toast.success(`'${result.card.title}' Kartı Silindi.`)
     } catch {
       toast.error('Kart silinemedi.')
     }
   }
 
-  const handleUpdateColumn = async () =>  {
+  const handleUpdateColumn = async (e) =>  {
+    e.preventDefault();
+    if(newColumnTitle === '') {
+      toast.error('Liste Başlığı Boş Olamaz.')
+      return
+    }
+    if(newColumnTitle === column.title) {
+      toast.info('Farklı Bir Başlık Giriniz.')
+      return
+    }
     try {
       setLoading(true)
       const result = await updateColumn(boardId, column.id, {title: newColumnTitle})
-      console.log('result', result)
-      toast.success('Liste Başlığı Güncellendi.')
+      toast.success(`Liste Başlığı '${result.title}' Olarak Güncellendi.`)
+      setColumns(prev => prev.map(col => col.id === column.id ? {...col, title: newColumnTitle} : col))
+      setNewColumnTitle('')
     } catch (err) {
       setLoading(false)
       toast.error(err.message)
@@ -138,6 +148,7 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
                 >
                     <CardItem
                       card={card}
+                      setCardsMap={setCardsMap}
                       onDelete={() => {
                         setSelectedCardId(card.id)
                         setShowDeleteCardModal(true)

@@ -39,7 +39,6 @@ export default function BoardPage() {
   const [board, setBoard] = useState({})
   const [columns, setColumns] = useState([])
   const [cardsMap, setCardsMap] = useState({})
-  const [newColumnTitle, setNewColumnTitle] = useState('')
   const [error, setError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -85,10 +84,11 @@ export default function BoardPage() {
   }
 
   const handleCreateColumn = async (title) => {
-    if (!title.trim()) return setError('Başlık boş olamaz.')
+
     try {
       setLoading(true)
-      await createColumn(boardId, {title, order: columns.length})
+      const result = await createColumn(boardId, {title, order: columns.length})
+      toast.success(`'${result.title}' Listesi Oluşturuldu.`)
       await loadBoard()
       // setNewColumnTitle('')
 
@@ -102,10 +102,8 @@ export default function BoardPage() {
           inline: 'end'
         })
       }
-
-      setError('')
-    } catch {
-      setError('Kolon oluşturulamadı.')
+    } catch(err) {
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -269,7 +267,9 @@ export default function BoardPage() {
                 >
                   <Column
                     column={col}
+                    setColumns={setColumns}
                     cards={cardsMap[col.id] || []}
+                    setCardsMap={setCardsMap}
                     boardId={boardId}
                     onAddCard={loadBoard}
                   />

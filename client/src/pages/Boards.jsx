@@ -24,7 +24,6 @@ export default function BoardsPage() {
     async function loadBoards() {
       try {
         const res = await getBoards()
-        console.log(res)
         setOwnBoards(res.private)
         setSharedBoards(res.shared)
       } catch (err) {
