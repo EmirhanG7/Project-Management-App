@@ -126,10 +126,11 @@ export const createColumn = (boardId, data) =>
     body: JSON.stringify(data),
   });
 
-export const updateColumn = (boardId, columnId, data) =>
+export const updateColumn = (boardId, columnId, title) =>
+
   fetchApi(`/boards/${boardId}/columns/${columnId}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(title),
   });
 
 export const deleteColumn = (boardId, columnId) =>

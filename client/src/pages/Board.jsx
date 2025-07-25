@@ -1,9 +1,31 @@
 import {useEffect, useRef, useState} from 'react'
-import { useParams } from 'react-router-dom'
-import {getColumns, getCards, createColumn, moveCard, reorderCards, getBoardById, inviteToBoard} from '../api'
+import {useNavigate, useParams} from 'react-router-dom'
+import {
+  getColumns,
+  getCards,
+  createColumn,
+  moveCard,
+  reorderCards,
+  getBoardById,
+  inviteToBoard,
+  deleteBoard
+} from '../api'
 import Column from '../components/Column'
-import { DragDropContext, Droppable } from '@hello-pangea/dnd'
+import {DragDropContext, Droppable} from '@hello-pangea/dnd'
 import CreateButton from "@/components/CreateButton.jsx";
+import {useSelector} from "react-redux";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog.js";
+import {CircleX, Cog} from 'lucide-react';
+import {toast} from "sonner";
+import {Button} from "@/components/ui/button.js";
+import ConfirmModal from "@/components/ConfirmModal.jsx";
 
 function reorderList(list, from, to) {
   const result = Array.from(list)
@@ -13,7 +35,7 @@ function reorderList(list, from, to) {
 }
 
 export default function BoardPage() {
-  const { boardId } = useParams()
+  const {boardId} = useParams()
   const [board, setBoard] = useState({})
   const [columns, setColumns] = useState([])
   const [cardsMap, setCardsMap] = useState({})
@@ -23,9 +45,14 @@ export default function BoardPage() {
   const [loading, setLoading] = useState(false)
   const [inviteErr, setInviteErr] = useState('')
   const [inviteMsg, setInviteMsg] = useState('')
+  const [showDeleteBoardModal, setShowDeleteBoardModal] = useState(false)
 
+
+  const navigate = useNavigate()
   const containerRef = useRef(null)
   const initialLoaded = useRef(false)
+
+  const user = useSelector(state => state.auth.user)
 
   useEffect(() => {
     loadBoard()
@@ -57,11 +84,11 @@ export default function BoardPage() {
     }
   }
 
-  const handleCreateColumn = async ( title ) => {
+  const handleCreateColumn = async (title) => {
     if (!title.trim()) return setError('Başlık boş olamaz.')
     try {
       setLoading(true)
-      await createColumn(boardId, { title, order: columns.length })
+      await createColumn(boardId, {title, order: columns.length})
       await loadBoard()
       // setNewColumnTitle('')
 
@@ -91,12 +118,12 @@ export default function BoardPage() {
   const onDragEnd = async (result) => {
     setIsDragging(false)
 
-    const { source, destination, draggableId } = result
+    const {source, destination, draggableId} = result
     if (!destination) return
 
-    const fromCol    = source.droppableId
-    const toCol      = destination.droppableId
-    const cardId     = Number(draggableId)
+    const fromCol = source.droppableId
+    const toCol = destination.droppableId
+    const cardId = Number(draggableId)
 
     if (fromCol === toCol) {
       const newList = reorderList(
@@ -104,8 +131,8 @@ export default function BoardPage() {
         source.index,
         destination.index
       )
-      setCardsMap(m => ({ ...m, [fromCol]: newList }))
-      const reordered = newList.map((c, i) => ({ id: c.id, order: i }))
+      setCardsMap(m => ({...m, [fromCol]: newList}))
+      const reordered = newList.map((c, i) => ({id: c.id, order: i}))
       try {
         await reorderCards(boardId, Number(fromCol), reordered)
       } catch (e) {
@@ -115,14 +142,14 @@ export default function BoardPage() {
     }
 
     const sourceList = Array.from(cardsMap[fromCol])
-    const [moved]    = sourceList.splice(source.index, 1)
-    const destList   = Array.from(cardsMap[toCol] || [])
+    const [moved] = sourceList.splice(source.index, 1)
+    const destList = Array.from(cardsMap[toCol] || [])
     destList.splice(destination.index, 0, moved)
 
     setCardsMap(m => ({
       ...m,
       [fromCol]: sourceList,
-      [toCol]:   destList,
+      [toCol]: destList,
     }))
 
     try {
@@ -133,7 +160,7 @@ export default function BoardPage() {
         Number(toCol),
         destination.index
       )
-      const reordered = destList.map((c, i) => ({ id: c.id, order: i }))
+      const reordered = destList.map((c, i) => ({id: c.id, order: i}))
       await reorderCards(boardId, Number(toCol), reordered)
     } catch (e) {
       console.error(e)
@@ -141,10 +168,11 @@ export default function BoardPage() {
   }
 
   const handleInvite = async email => {
-    setInviteErr(''); setInviteMsg('')
+    setInviteErr('');
+    setInviteMsg('')
     try {
       setLoading(true)
-      const { message } = await inviteToBoard(boardId, email)
+      const {message} = await inviteToBoard(boardId, email)
       setInviteMsg(message)
     } catch (err) {
       setInviteErr(err.message)
@@ -153,22 +181,67 @@ export default function BoardPage() {
     }
   }
 
+  const handleDelete = async () => {
+    try {
+      await deleteBoard(board.id)
+      toast.success('Pano silindi.')
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setShowDeleteBoardModal(false)
+      navigate('/boards')
+    }
+  }
+
   return (
     <div className="py-4 h-full flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">{board.title}</h1>
+      <ConfirmModal
+        isOpen={showDeleteBoardModal}
+        title="Bu panoyu silmek istiyor musun?"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteBoardModal(false)}
+      />
+      <div className='flex items-center justify-between mb-4'>
+        <h1 className="text-2xl font-bold mb-4">{board.title}</h1>
+        {
+          user.id === board.userId &&
+          <Dialog>
+            <DialogTrigger>
+              <Cog/>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle><h1 className="text-2xl font-bold mb-4">{board.title}</h1></DialogTitle>
+
+                <div className="flex flex-col gap-6 items-center justify-center  ">
+                  <CreateButton
+                    title="Email ile Davet Et"
+                    placeholder="Email adresi..."
+                    loading={loading}
+                    submitTitle="Davet Et"
+                    submit={handleInvite}
+                  />
+                  <Button
+                    className="w-full max-w-sm"
+                    variant="destructive"
+                    onClick={() => {
+                      setShowDeleteBoardModal(true)
+                    }}
+                  >
+                    Panoyu Sil
+                    <CircleX/>
+                  </Button>
+                </div>
+
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        }
+      </div>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       {inviteErr && <p className="text-red-500 mb-2">{inviteErr}</p>}
       {inviteMsg && <p className="text-green-600 mb-2">{inviteMsg}</p>}
 
-      <div className="mb-4">
-        <CreateButton
-          title="Email ile Davet Et"
-          placeholder="Email adresi..."
-          loading={loading}
-          submitTitle="Davet Et"
-          submit={handleInvite}
-        />
-      </div>
 
       <DragDropContext
         onDragStart={onDragStart}
@@ -178,8 +251,8 @@ export default function BoardPage() {
           ref={containerRef}
           className={`
             flex items-start gap-6 overflow-x-auto
-            ${isDragging ? '' : 'snap-x snap-mandatory'} 
             scroll-auto snap-center snap-mandatory
+            ${isDragging ? '' : 'snap-x'} 
           `}
         >
           {columns.map(col => (
@@ -206,7 +279,8 @@ export default function BoardPage() {
             </Droppable>
           ))}
           <div className="snap-center w-full md:min-w-[300px] flex-shrink-0 md:flex-initial">
-            <CreateButton title='Yeni Liste Oluştur' placeholder='Yeni Liste Başlığı...' submitTitle='Oluştur' submit={handleCreateColumn} />
+            <CreateButton title='Yeni Liste Oluştur' placeholder='Yeni Liste Başlığı...' submitTitle='Oluştur'
+                          submit={handleCreateColumn}/>
           </div>
         </div>
       </DragDropContext>

@@ -48,11 +48,12 @@ export async function getColumnById(req, res) {
 
 export async function updateColumn(req, res) {
   const id = Number(req.params.id);
-  const { title, order } = req.body;
+  const { title } = req.body;
+  if (!title) return res.status(400).json({ error: 'Başlık gerekli.' });
 
   const result = await db
     .update(columns)
-    .set({ title, order })
+    .set({ title })
     .where(eq(columns.id, id))
     .returning();
 

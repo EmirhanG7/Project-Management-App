@@ -1,22 +1,32 @@
 import { useState } from 'react'
 import { Draggable } from '@hello-pangea/dnd'
-import { createCard, deleteColumn, deleteCard } from '../api'
+import {createCard, deleteColumn, deleteCard, updateColumn} from '../api'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import ConfirmModal from './ConfirmModal'
 import CardItem from './CardItem'
-import {Loader2} from "lucide-react";
+import {CircleX, Loader2, Settings2} from "lucide-react";
 import SubmitButton from "@/components/SubmitButton.jsx";
 import CreateButton from "@/components/CreateButton.jsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog.js";
+import {toast} from "sonner";
+
 
 export default function Column({ column, cards = [], onAddCard, boardId }) {
-  const [newCardTitle, setNewCardTitle] = useState('')
-  const [error, setError] = useState('')
+  const [newColumnTitle, setNewColumnTitle] = useState('')
   const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false)
   const [showDeleteCardModal, setShowDeleteCardModal] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState(null)
   const [loading, setLoading] = useState(false)
+
 
   const handleCreateCard = async (title) => {
     if (!title.trim()) return setError('Kart başlığı boş olamaz.')
@@ -24,10 +34,10 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
       setLoading(true)
       await createCard(boardId, column.id, { title})
       onAddCard()
-      setError('')
       setLoading(false)
-    } catch {
-      setError('Kart oluşturulamadı.')
+      toast.success('Yeni Kart Oluşturuldu.')
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 
@@ -35,9 +45,10 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
     try {
       await deleteColumn(boardId, column.id)
       setShowDeleteColumnModal(false)
+      toast.success('Liste silindi.')
       onAddCard()
     } catch {
-      setError('Liste silinemedi.')
+      toast.error('Liste silinemedi.')
     }
   }
 
@@ -46,8 +57,23 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
       await deleteCard(boardId, column.id, selectedCardId)
       setShowDeleteCardModal(false)
       onAddCard()
+      toast.success('Kart silindi.')
     } catch {
-      setError('Kart silinemedi.')
+      toast.error('Kart silinemedi.')
+    }
+  }
+
+  const handleUpdateColumn = async () =>  {
+    try {
+      setLoading(true)
+      const result = await updateColumn(boardId, column.id, {title: newColumnTitle})
+      console.log('result', result)
+      toast.success('Liste Başlığı Güncellendi.')
+    } catch (err) {
+      setLoading(false)
+      toast.error(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -68,13 +94,32 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
 
       <div className="flex justify-between items-center mb-4 border-b pb-2">
         <h2 className="font-bold text-lg ">{column.title}</h2>
-        <Button
-          variant="destructive"
-          size="icon"
-          onClick={() => setShowDeleteColumnModal(true)}
-        >
-          ×
-        </Button>
+        <Dialog>
+          <DialogTrigger>
+            <Settings2 />
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                <h2 className="font-bold text-lg ">{column.title}</h2>
+              </DialogTitle>
+              <div>
+                <form className='space-y-2'>
+                  <Input defaultValue={column.title}  onChange={e => setNewColumnTitle(e.target.value)}/>
+                  <SubmitButton submit={handleUpdateColumn} title='Liste Başlığı Güncelle' loading={loading} />
+                </form>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteColumnModal(true)}
+              >
+                Listeyi Sil
+                <CircleX/>
+              </Button>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-2 mb-4">
@@ -85,19 +130,19 @@ export default function Column({ column, cards = [], onAddCard, boardId }) {
               draggableId={card.id.toString()}
               index={index}
             >
-              {(provided, snapshot) => (
+              {(provided) => (
                 <div
                   ref={provided.innerRef}
                   {...provided.draggableProps}
                   {...provided.dragHandleProps}
                 >
-                  <CardItem
-                    card={card}
-                    onDelete={() => {
-                      setSelectedCardId(card.id)
-                      setShowDeleteCardModal(true)
-                    }}
-                  />
+                    <CardItem
+                      card={card}
+                      onDelete={() => {
+                        setSelectedCardId(card.id)
+                        setShowDeleteCardModal(true)
+                      }}
+                    />
                 </div>
               )}
             </Draggable>

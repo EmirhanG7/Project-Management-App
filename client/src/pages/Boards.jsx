@@ -6,6 +6,8 @@ import CreateButton from "@/components/CreateButton.jsx"
 import ConfirmModal from "@/components/ConfirmModal.jsx"
 import {Button} from "@/components/ui/button.js";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.js";
+import {toast} from "sonner";
+import {CircleX} from "lucide-react";
 
 export default function BoardsPage() {
   const navigate = useNavigate()
@@ -17,8 +19,6 @@ export default function BoardsPage() {
   const [error, setError] = useState('')
   const [loadingCreate, setLoadingCreate] = useState(false)
 
-  const [showDeleteBoardModal, setShowDeleteBoardModal] = useState(false)
-  const [selectedBoardId, setSelectedBoardId] = useState(null)
 
   useEffect(() => {
     async function loadBoards() {
@@ -28,7 +28,7 @@ export default function BoardsPage() {
         setOwnBoards(res.private)
         setSharedBoards(res.shared)
       } catch (err) {
-        console.error(err)
+        toast.error(err.message)
         navigate('/login')
       }
     }
@@ -38,6 +38,7 @@ export default function BoardsPage() {
   const handleCreate = async title => {
     if (!title.trim()) {
       setError('Başlık boş olamaz.')
+      toast.error('Başlık boş olamaz.')
       return
     }
     try {
@@ -45,37 +46,17 @@ export default function BoardsPage() {
       const newBoard = await createBoard(title)
       setOwnBoards(prev => [...prev, newBoard])
       setError('')
+      toast.success('Yeni Pano Oluşturuldu.')
     } catch (err) {
-      console.error(err)
+      toast.error(err.message)
       setError(err.message)
     } finally {
       setLoadingCreate(false)
     }
   }
 
-  const handleDelete = async () => {
-    try {
-      await deleteBoard(selectedBoardId)
-      setOwnBoards(prev => prev.filter(b => b.id !== selectedBoardId))
-      setError('')
-    } catch (err) {
-      console.error(err)
-      setError(err.message)
-    } finally {
-      setShowDeleteBoardModal(false)
-      setSelectedBoardId(null)
-    }
-  }
-
-
   return (
     <div className="flex flex-col gap-4">
-      <ConfirmModal
-        isOpen={showDeleteBoardModal}
-        title="Bu panoyu silmek istiyor musun?"
-        onConfirm={handleDelete}
-        onCancel={() => setShowDeleteBoardModal(false)}
-      />
 
       <h1 className="text-2xl font-bold">Panolar</h1>
       {error && <div className="text-red-500">{error}</div>}
@@ -121,16 +102,6 @@ export default function BoardsPage() {
                 >
                   {board.title}
                 </Link>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedBoardId(board.id)
-                    setShowDeleteBoardModal(true)
-                  }}
-                >
-                  Sil
-                </Button>
               </Card>
             ))}
           </div>

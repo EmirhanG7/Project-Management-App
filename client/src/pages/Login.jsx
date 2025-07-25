@@ -1,19 +1,20 @@
-import { useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { login, resendVerification } from '../api';
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Loader2 } from "lucide-react";
+import {useState} from 'react';
+import {useLocation, useNavigate, Link} from 'react-router-dom';
+import {login, resendVerification} from '../api';
+import {Input} from "../components/ui/input";
+import {Button} from "../components/ui/button";
+import {Loader2} from "lucide-react";
 import {Label} from "@/components/ui/label.js";
 import {Checkbox} from "@/components/ui/checkbox.js";
 import {useDispatch} from "react-redux";
 import {setUser} from "@/store/authSlice.js";
+import {toast} from "sonner";
 
 export default function LoginPage() {
-  const { state } = useLocation();
+  const {state} = useLocation();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: state?.email || '', password: '', remember: false });
+  const [form, setForm] = useState({email: state?.email || '', password: '', remember: false});
   const [error, setError] = useState('');
   const [info, setInfo] = useState(state?.info || '');
   const [loading, setLoading] = useState(false);
@@ -27,14 +28,16 @@ export default function LoginPage() {
     setResendMsg('');
     try {
       setLoading(true);
-      const { user } = await login(form);
+      const {user} = await login(form);
       dispatch(setUser(user))
       // localStorage.setItem('token', token);
       setLoading(false);
+      toast.success('Giriş Başarılı')
       navigate('/boards');
     } catch (err) {
       setLoading(false);
       setError(err.message);
+      toast.error(err.message)
       if (err.message.includes('doğrulayın')) {
         setInfo(err.message);
       }
@@ -47,8 +50,10 @@ export default function LoginPage() {
     try {
       await resendVerification(form.email);
       setResendMsg('Yeni onay maili gönderildi. Gelen kutunuzu kontrol edin.');
+      toast('Yeni onay maili gönderildi. Gelen kutunuzu kontrol edin.')
     } catch (err) {
       setResendMsg(`Hata: ${err.message}`);
+      toast.error(err.message)
     }
   };
 
@@ -70,24 +75,24 @@ export default function LoginPage() {
         type="email"
         placeholder="Email"
         value={form.email}
-        onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
+        onChange={(e) => setForm(f => ({...f, email: e.target.value}))}
       />
       <Input
         type="password"
         placeholder="Şifre"
         value={form.password}
-        onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
+        onChange={(e) => setForm(f => ({...f, password: e.target.value}))}
       />
       <div className="flex items-center space-x-2">
         <Checkbox
           checked={form.remember}
-          onCheckedChange={(value) => setForm(f => ({ ...f, remember: value === true }))}
-          id="terms" />
+          onCheckedChange={(value) => setForm(f => ({...f, remember: value === true}))}
+          id="terms"/>
         <Label htmlFor="terms">Beni Hatırla</Label>
       </div>
 
       {loading
-        ? <Button className='w-full' disabled><Loader2 className="animate-spin" /></Button>
+        ? <Button className='w-full' disabled><Loader2 className="animate-spin"/></Button>
         : <Button type="submit" className="w-full">Giriş Yap</Button>
       }
 

@@ -1,12 +1,17 @@
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog.js";
+import { Settings2, CircleX } from "lucide-react";
 
 export default function CardItem({ card, onDelete, isOverlay }) {
   return (
-    // <div className="
-    //   p-2 bg-gray-100 rounded-[10px] flex justify-between items-center
-    //   select-none transition-all duration-200
-    //   border border-transparent
-    // ">
+
     <div
       className={`
        p-2 bg-gray-100 rounded-[12px] flex justify-between items-center
@@ -16,7 +21,23 @@ export default function CardItem({ card, onDelete, isOverlay }) {
     `}
       style={isOverlay ? { zIndex: 50 } : {}}
     >
-      <span className="text-sm text-gray-800">{card.title}</span>
+      <div className='flex items-center gap-4'>
+        <Dialog>
+          <DialogTrigger>
+            <Settings2 />
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle><span className="text-gray-800">{card.title}</span></DialogTitle>
+              <DialogDescription>
+                todo yapılacak
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+        <span className="text-gray-800">{card.title}</span>
+      </div>
+
       {!isOverlay && (
         <Button
           variant="ghost"
@@ -24,9 +45,10 @@ export default function CardItem({ card, onDelete, isOverlay }) {
           className="text-red-500 hover:bg-red-100"
           onClick={onDelete}
         >
-          ×
+          <CircleX />
         </Button>
       )}
     </div>
+
   )
 }
