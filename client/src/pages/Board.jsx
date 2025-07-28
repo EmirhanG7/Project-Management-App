@@ -248,6 +248,7 @@ export default function BoardPage() {
         <div
           ref={containerRef}
           className={`
+           pt-16
             flex items-start gap-6 overflow-x-auto
             scroll-auto snap-center snap-mandatory
             ${isDragging ? '' : 'snap-x'} 

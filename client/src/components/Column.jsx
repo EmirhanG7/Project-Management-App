@@ -88,7 +88,7 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
   }
 
   return (
-    <Card className="bg-white p-4 rounded shadow min-h-[70vh] w-full flex flex-col ">
+    <Card className="bg-white px-2 pt-2 pb-4 rounded shadow min-h-[70vh] w-full flex flex-col relative">
       <ConfirmModal
         isOpen={showDeleteColumnModal}
         title="Bu listeyi silmek istiyor musun?"
@@ -102,7 +102,7 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
         onCancel={() => setShowDeleteCardModal(false)}
       />
 
-      <div className="flex justify-between items-center mb-4 border-b pb-2">
+      <div className=" bg-white shadow rounded flex justify-between items-center px-3 py-3 absolute w-full -top-16 left-0 ">
         <h2 className="font-bold text-lg ">{column.title}</h2>
         <Dialog>
           <DialogTrigger>
@@ -129,23 +129,23 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
             </DialogHeader>
           </DialogContent>
         </Dialog>
-
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2 mb-4">
-        {cards.length ? (
-          cards.map((card, index) => (
-            <Draggable
-              key={card.id}
-              draggableId={card.id.toString()}
-              index={index}
-            >
-              {(provided) => (
-                <div
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
-                >
+      <div className="flex-1 overflow-y-auto space-y-2">
+        <div className='flex flex-col gap-2'>
+          {cards.length ? (
+            cards.map((card, index) => (
+              <Draggable
+                key={card.id}
+                draggableId={card.id.toString()}
+                index={index}
+              >
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                  >
                     <CardItem
                       card={card}
                       setCardsMap={setCardsMap}
@@ -154,15 +154,16 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
                         setShowDeleteCardModal(true)
                       }}
                     />
-                </div>
-              )}
-            </Draggable>
-          ))
-        ) : (
-          <div className="h-20 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
-            Buraya kart sürükleyin veya yeni kart ekleyin.
-          </div>
-        )}
+                  </div>
+                )}
+              </Draggable>
+            ))
+          ) : (
+            <div className="h-12 mt-1 text-xs rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+              Buraya kart sürükleyin veya yeni kart ekleyin.
+            </div>
+          )}
+        </div>
       </div>
 
       <CreateButton title='Yeni Kart Oluştur' placeholder='Yeni Kart Başlığı...' submitTitle='Oluştur' loading={loading} submit={handleCreateCard} />

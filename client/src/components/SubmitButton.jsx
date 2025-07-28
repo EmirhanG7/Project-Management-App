@@ -8,7 +8,7 @@ export default function SubmitButton({loading=false, submit, title}) {
     <>
       {
         loading ?
-          <Button disabled>
+          <Button disabled className='w-full'>
             <Loader2 className="animate-spin" />
           </Button>
           :
