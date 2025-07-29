@@ -58,7 +58,7 @@ export default function CardItem({card, setCardsMap, onDelete, isOverlay}) {
       <div className='flex items-center justify-between w-full'>
         <span className=" text-gray-800">{card.title}</span>
         <Dialog>
-          <DialogTrigger>
+          <DialogTrigger onClick={e => setNewCardTitle(card.title)}>
             <Settings2/>
           </DialogTrigger>
           <DialogContent>

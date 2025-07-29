@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import {Loader2} from "lucide-react";
 
-export default function CreateButton({ title, placeholder, submit, submitTitle, loading = false }) {
+export default function CreateButton({ className, title, placeholder, submit, submitTitle, loading = false }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
@@ -25,7 +25,7 @@ export default function CreateButton({ title, placeholder, submit, submitTitle, 
   const transition = { type: "tween", duration: 0.2, ease: "easeInOut" };
 
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col">
+    <div className={`w-full max-w-sm mx-auto flex flex-col ${className}`}>
       <AnimatePresence initial={false} mode="wait">
         {!isExpanded && (
           <motion.div

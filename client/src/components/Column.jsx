@@ -78,7 +78,7 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
       const result = await updateColumn(boardId, column.id, {title: newColumnTitle})
       toast.success(`Liste Başlığı '${result.title}' Olarak Güncellendi.`)
       setColumns(prev => prev.map(col => col.id === column.id ? {...col, title: newColumnTitle} : col))
-      setNewColumnTitle('')
+      // setNewColumnTitle('')
     } catch (err) {
       setLoading(false)
       toast.error(err.message)
@@ -103,19 +103,19 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
       />
 
       <div className=" bg-white shadow rounded flex justify-between items-center px-3 py-3 absolute w-full -top-16 left-0 ">
-        <h2 className="font-bold text-lg ">{column.title}</h2>
+        <p className="font-bold text-lg ">{column.title}</p>
         <Dialog>
-          <DialogTrigger>
+          <DialogTrigger onClick={e => setNewColumnTitle(column.title)}>
             <Settings2 />
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                <h2 className="font-bold text-lg ">{column.title}</h2>
+                <p className="font-bold text-lg ">{column.title}</p>
               </DialogTitle>
               <div>
                 <form className='space-y-2'>
-                  <Input defaultValue={column.title}  onChange={e => setNewColumnTitle(e.target.value)}/>
+                  <Input defaultValue={column.title} onChange={e => setNewColumnTitle(e.target.value)}/>
                   <SubmitButton submit={handleUpdateColumn} title='Liste Başlığı Güncelle' loading={loading} />
                 </form>
               </div>

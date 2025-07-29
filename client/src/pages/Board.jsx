@@ -8,7 +8,7 @@ import {
   reorderCards,
   getBoardById,
   inviteToBoard,
-  deleteBoard
+  deleteBoard, updateBoard
 } from '../api'
 import Column from '../components/Column'
 import {DragDropContext, Droppable} from '@hello-pangea/dnd'
@@ -26,6 +26,8 @@ import {CircleX, Cog} from 'lucide-react';
 import {toast} from "sonner";
 import {Button} from "@/components/ui/button.js";
 import ConfirmModal from "@/components/ConfirmModal.jsx";
+import {Input} from "@/components/ui/input.js";
+import SubmitButton from "@/components/SubmitButton.jsx";
 
 function reorderList(list, from, to) {
   const result = Array.from(list)
@@ -39,12 +41,10 @@ export default function BoardPage() {
   const [board, setBoard] = useState({})
   const [columns, setColumns] = useState([])
   const [cardsMap, setCardsMap] = useState({})
-  const [error, setError] = useState('')
   const [isDragging, setIsDragging] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [inviteErr, setInviteErr] = useState('')
-  const [inviteMsg, setInviteMsg] = useState('')
   const [showDeleteBoardModal, setShowDeleteBoardModal] = useState(false)
+  const [newBoardTitle, setNewBoardTitle] = useState('')
 
 
   const navigate = useNavigate()
@@ -166,14 +166,12 @@ export default function BoardPage() {
   }
 
   const handleInvite = async email => {
-    setInviteErr('');
-    setInviteMsg('')
     try {
       setLoading(true)
       const {message} = await inviteToBoard(boardId, email)
-      setInviteMsg(message)
+      toast.success(message)
     } catch (err) {
-      setInviteErr(err.message)
+      toast.error(err.message)
     } finally {
       setLoading(false)
     }
@@ -188,6 +186,27 @@ export default function BoardPage() {
     } finally {
       setShowDeleteBoardModal(false)
       navigate('/boards')
+    }
+  }
+  const handleUpdateBoard = async (e) => {
+    e.preventDefault()
+    if (newBoardTitle === '') {
+      toast.error('Pano Başlığı Boş Olamaz.')
+      return
+    }
+    if (newBoardTitle === board.title) {
+      toast.info('Farklı Bir Başlık Giriniz.')
+      return
+    }
+    try {
+      setLoading(true)
+      const result = await updateBoard(board.id, newBoardTitle)
+      toast.success(`Pano Başlığı ${result.title} Olarak Değiştirildi.`)
+      setBoard(result)
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -210,9 +229,16 @@ export default function BoardPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle><h1 className="text-2xl font-bold mb-4">{board.title}</h1></DialogTitle>
+                <div>
+                  <form className='space-y-2 '>
+                    <Input defaultValue={board.title} onChange={e => setNewBoardTitle(e.target.value)}/>
+                    <SubmitButton submit={handleUpdateBoard} title='Kart Başlığı Güncelle' loading={loading}/>
+                  </form>
+                </div>
 
                 <div className="flex flex-col gap-6 items-center justify-center  ">
                   <CreateButton
+                    className='!max-w-none'
                     title="Email ile Davet Et"
                     placeholder="Email adresi..."
                     loading={loading}
@@ -220,7 +246,7 @@ export default function BoardPage() {
                     submit={handleInvite}
                   />
                   <Button
-                    className="w-full max-w-sm"
+                    className="w-full"
                     variant="destructive"
                     onClick={() => {
                       setShowDeleteBoardModal(true)
@@ -236,10 +262,6 @@ export default function BoardPage() {
           </Dialog>
         }
       </div>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      {inviteErr && <p className="text-red-500 mb-2">{inviteErr}</p>}
-      {inviteMsg && <p className="text-green-600 mb-2">{inviteMsg}</p>}
-
 
       <DragDropContext
         onDragStart={onDragStart}
