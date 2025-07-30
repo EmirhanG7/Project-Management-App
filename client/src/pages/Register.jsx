@@ -31,43 +31,44 @@ export default function RegisterPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-10 space-y-4">
-      <h2 className="text-2xl font-bold mb-4">Kayıt Ol</h2>
-      {error && <div className="text-red-500">{error}</div>}
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-md bg-card p-8 rounded-lg shadow-lg border border-border space-y-4">
+        <h2 className="text-2xl font-bold mb-4 text-card-foreground text-center">Kayıt Ol</h2>
 
-      <Input
-        type="text"
-        placeholder="İsim"
-        value={form.name}
-        onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-      />
-      <Input
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
-      />
-      <Input
-        type="password"
-        placeholder="Şifre"
-        value={form.password}
-        onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
-      />
-      <Input
-        type="password"
-        placeholder="Şifre (tekrar)"
-        value={form.confirmPassword}
-        onChange={(e) => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
-      />
+        <Input
+          type="text"
+          placeholder="İsim"
+          value={form.name}
+          onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
+        />
+        <Input
+          type="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
+        />
+        <Input
+          type="password"
+          placeholder="Şifre"
+          value={form.password}
+          onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
+        />
+        <Input
+          type="password"
+          placeholder="Şifre (tekrar)"
+          value={form.confirmPassword}
+          onChange={(e) => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+        />
 
-      {loading
-        ? <Button disabled><Loader2 className="animate-spin" /></Button>
-        : <Button type="submit" className="w-full">Kayıt Ol</Button>
-      }
+        {loading
+          ? <Button disabled><Loader2 className="animate-spin" /></Button>
+          : <Button type="submit" className="w-full text-card-foreground">Kayıt Ol</Button>
+        }
 
-      <Button variant="outline" asChild className="w-full justify-center text-sm">
-        <Link to="/login">Zaten bir hesabın var mı? Giriş Yap</Link>
-      </Button>
-    </form>
+        <Button variant="outline" asChild className="w-full justify-center text-sm">
+          <Link to="/login">Zaten bir hesabın var mı? Giriş Yap</Link>
+        </Button>
+      </form>
+    </div>
   );
 }

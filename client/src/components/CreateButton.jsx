@@ -25,7 +25,7 @@ export default function CreateButton({ className, title, placeholder, submit, su
   const transition = { type: "tween", duration: 0.2, ease: "easeInOut" };
 
   return (
-    <div className={`w-full max-w-sm mx-auto flex flex-col ${className}`}>
+  <div className={`bg-card text-muted-foreground hover:text-foreground w-full max-w-sm mx-auto flex flex-col ${className}`}>
       <AnimatePresence initial={false} mode="wait">
         {!isExpanded && (
           <motion.div
@@ -37,7 +37,7 @@ export default function CreateButton({ className, title, placeholder, submit, su
           >
             <Button
               onClick={() => setIsExpanded(true)}
-              className="w-full"
+              className="w-full text-card dark:text-card-foreground hover:text-foreground hover:bg-accent"
             >
               {title}
             </Button>
@@ -51,7 +51,7 @@ export default function CreateButton({ className, title, placeholder, submit, su
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={transition}
-            className="flex flex-col p-4 bg-gray-100 rounded shadow-lg dark:bg-gray-800 gap-4"
+            className="flex flex-col p-4 bg-card border border-border rounded shadow-lg gap-4"
           >
             <Input
               type="text"
@@ -59,10 +59,12 @@ export default function CreateButton({ className, title, placeholder, submit, su
               onChange={(e) => setInputValue(e.target.value)}
               placeholder={placeholder}
               autoFocus
-              className="mb-2"
+              className="mb-2 bg-background border-border text-foreground"
             />
             <div className="flex justify-between gap-2">
-              <Button variant="destructive" onClick={handleCancel}>
+              <Button
+                className="text-card-foreground hover:text-card-foreground"
+                variant="destructive" onClick={handleCancel}>
                 İptal
               </Button>
               {loading
@@ -71,7 +73,9 @@ export default function CreateButton({ className, title, placeholder, submit, su
                   <Loader2 className="animate-spin" />
                 </Button>
                 :
-                <Button disabled={inputValue === ""} onClick={handleAdd}>
+                <Button
+                  className="text-card-foreground hover:text-foreground"
+                  disabled={inputValue === ""} onClick={handleAdd}>
                   {submitTitle}
                 </Button>
               }

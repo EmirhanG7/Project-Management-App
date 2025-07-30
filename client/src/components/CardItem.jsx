@@ -49,24 +49,25 @@ export default function CardItem({card, setCardsMap, onDelete, isOverlay}) {
 
     <div
       className={`
-       p-2 bg-gray-100 rounded-[12px] flex justify-between items-center
-       select-none transition-all duration-200
-       border border-transparent hover:shadow
-      ${isOverlay ? '' : 'hover:scale-95 z-50 hover:border-gray-300'}
+       p-2 bg-muted border border-border rounded-[12px] flex justify-between items-center
+       select-none transition-all duration-200 hover:shadow
+      ${isOverlay ? '' : 'hover:scale-95 z-50 hover:border-border'}
       `}
     >
       <div className='flex items-center justify-between w-full'>
-        <span className=" text-gray-800">{card.title}</span>
+        <span className=" text-card-foreground">{card.title}</span>
         <Dialog>
           <DialogTrigger onClick={e => setNewCardTitle(card.title)}>
             <Settings2/>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-card border-border">
             <DialogHeader>
-              <DialogTitle><span className="text-gray-800">{card.title}</span></DialogTitle>
+              <DialogTitle><span className="text-card-foreground">{card.title}</span></DialogTitle>
               <div>
                 <form className='space-y-2'>
-                  <Input defaultValue={card.title} onChange={e => setNewCardTitle(e.target.value)}/>
+                  <Input
+                    className='bg-background border-border text-foreground'
+                    defaultValue={card.title} onChange={e => setNewCardTitle(e.target.value)}/>
                   <SubmitButton submit={handleUpdateCard} title='Kart Başlığı Güncelle' loading={loading}/>
                 </form>
               </div>

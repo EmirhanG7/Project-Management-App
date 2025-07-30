@@ -88,7 +88,7 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
   }
 
   return (
-    <Card className="bg-white px-2 pt-2 pb-4 rounded shadow min-h-[70vh] w-full flex flex-col relative">
+    <Card className="bg-card border border-border px-2 pt-2 pb-4 rounded shadow min-h-[70vh] w-full flex flex-col relative">
       <ConfirmModal
         isOpen={showDeleteColumnModal}
         title="Bu listeyi silmek istiyor musun?"
@@ -102,20 +102,22 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
         onCancel={() => setShowDeleteCardModal(false)}
       />
 
-      <div className=" bg-white shadow rounded flex justify-between items-center px-3 py-3 absolute w-full -top-16 left-0 ">
-        <p className="font-bold text-lg ">{column.title}</p>
+      <div className=" bg-card border border-border shadow rounded flex justify-between items-center px-3 py-3 absolute w-full -top-16 left-0 ">
+        <p className="font-bold text-lg text-card-foreground">{column.title}</p>
         <Dialog>
           <DialogTrigger onClick={e => setNewColumnTitle(column.title)}>
             <Settings2 />
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className='bg-card border-border'>
             <DialogHeader>
               <DialogTitle>
-                <p className="font-bold text-lg ">{column.title}</p>
+                <p className="font-bold text-lg text-card-foreground">{column.title}</p>
               </DialogTitle>
               <div>
                 <form className='space-y-2'>
-                  <Input defaultValue={column.title} onChange={e => setNewColumnTitle(e.target.value)}/>
+                  <Input
+                    className="bg-background border-border text-foreground"
+                    defaultValue={column.title} onChange={e => setNewColumnTitle(e.target.value)}/>
                   <SubmitButton submit={handleUpdateColumn} title='Liste Başlığı Güncelle' loading={loading} />
                 </form>
               </div>
@@ -159,7 +161,7 @@ export default function Column({ column, cards = [], setCardsMap, onAddCard, boa
               </Draggable>
             ))
           ) : (
-            <div className="h-12 mt-1 text-xs rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400">
+            <div className="h-12 mt-1 text-xs rounded border-2 border-dashed border-border flex items-center justify-center text-muted-foreground">
               Buraya kart sürükleyin veya yeni kart ekleyin.
             </div>
           )}

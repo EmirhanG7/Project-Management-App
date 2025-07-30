@@ -24,9 +24,10 @@ export default function PrivateRoute({ redirectPath = '/login' }) {
   }, []);
 
   if (checkingAuth) {
-    return <div>Loading...</div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center" >
+      <span className="text-foreground">Loading...</span>
+    </div>;
   }
-
 
   if (user === null) {
     return <Navigate to={redirectPath} state={{ from: location }} replace />

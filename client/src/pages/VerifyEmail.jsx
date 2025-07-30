@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { verifyEmail, resendVerification } from '@/api'
+import {toast} from "sonner";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams()
@@ -23,11 +24,13 @@ export default function VerifyEmail() {
       .then(data => {
         setStatus('success')
         setMessage(data.message)
+        toast.success(data.message)
         setTimeout(() => navigate('/login'), 3000)
       })
       .catch(err => {
         setStatus('error')
         setMessage(err.message)
+        toast.error(err.message)
       })
   }, [token, navigate])
 
@@ -42,38 +45,40 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 bg-white shadow-md rounded-lg text-center">
-      {status === 'pending' && <p className="text-gray-600">Doğrulama işleniyor…</p>}
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-card shadow-lg rounded-lg border border-border p-6 text-center">
+        {status === 'pending' && <p className="text-muted-foreground">Doğrulama işleniyor…</p>}
 
-      {status === 'success' && (
-        <>
-          <h2 className="text-2xl font-bold text-green-600 mb-4">✅ Hesabınız onaylandı!</h2>
-          <p className="text-gray-700 mb-2">{message}</p>
-          <p className="text-gray-500">Giriş sayfasına yönlendiriliyorsunuz…</p>
-        </>
-      )}
+        {status === 'success' && (
+          <>
+            <h2 className="text-2xl font-bold text-primary mb-4">✅ Hesabınız onaylandı!</h2>
+            <p className="text-card-foreground mb-2">{message}</p>
+            <p className="text-muted-foreground">Giriş sayfasına yönlendiriliyorsunuz…</p>
+          </>
+        )}
 
-      {status === 'error' && (
-        <>
-          <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Doğrulama Hatası</h2>
-          <p className="text-gray-700 mb-4">{message}</p>
+        {status === 'error' && (
+          <>
+            <h2 className="text-2xl font-bold text-red-600 mb-4">❌ Doğrulama Hatası</h2>
+            <p className="text-card-foreground mb-4">{message}</p>
 
-          <button
-            onClick={handleResend}
-            disabled={!email}
-            className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded disabled:opacity-50"
-          >
-            Yeniden Doğrulama Gönder
-          </button>
-          {resendStatus && (
-            <p className={
-              `mt-4 ${resendStatus.startsWith('Hata') ? 'text-red-600' : 'text-green-600'}`
-            }>
-              {resendStatus}
-            </p>
-          )}
-        </>
-      )}
+            <button
+              onClick={handleResend}
+              disabled={!email}
+              className="w-full text-card-foreground"
+            >
+              Yeniden Doğrulama Gönder
+            </button>
+            {resendStatus && (
+              <p className={
+                `mt-4 ${resendStatus.startsWith('Hata') ? 'text-red-600' : 'text-primary'}`
+              }>
+                {resendStatus}
+              </p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

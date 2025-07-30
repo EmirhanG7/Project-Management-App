@@ -57,14 +57,13 @@ export default function BoardsPage() {
   return (
     <div className="flex flex-col gap-4">
 
-      <h1 className="text-2xl font-bold">Panolar</h1>
-      {error && <div className="text-red-500">{error}</div>}
+      <h1 className="text-2xl font-bold text-foreground">Panolar</h1>
 
       <Tabs
         defaultValue="own"
         value={activeTab}
         onValueChange={setActiveTab}
-        className="w-full"
+        className="w-full bg-card text-foreground border border-border rounded-lg shadow-lg p-4"
       >
         <TabsList >
           <TabsTrigger
@@ -97,7 +96,7 @@ export default function BoardsPage() {
               >
                 <Link
                   to={`/boards/${board.id}`}
-                  className="font-medium text-xl capitalize"
+                  className="font-medium text-xl capitalize text-card-foreground hover:text-primary"
                 >
                   {board.title}
                 </Link>
@@ -115,7 +114,7 @@ export default function BoardsPage() {
               >
                 <Link
                   to={`/boards/${board.id}`}
-                  className="font-medium text-xl capitalize"
+                  className="font-medium text-xl capitalize text-card-foreground hover:text-primary"
                 >
                   {board.title}
                 </Link>

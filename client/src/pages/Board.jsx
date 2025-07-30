@@ -78,8 +78,8 @@ export default function BoardPage() {
       }
 
 
-    } catch {
-      setError('Veriler yüklenemedi.')
+    } catch (err) {
+      toast.error(err.message)
     }
   }
 
@@ -211,7 +211,7 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="py-4 h-full flex flex-col">
+    <div className="py-4 h-full flex flex-col bg-background">
       <ConfirmModal
         isOpen={showDeleteBoardModal}
         title="Bu panoyu silmek istiyor musun?"
@@ -219,19 +219,21 @@ export default function BoardPage() {
         onCancel={() => setShowDeleteBoardModal(false)}
       />
       <div className='flex items-center justify-between mb-4'>
-        <h1 className="text-2xl font-bold mb-4">{board.title}</h1>
+        <h1 className="text-2xl font-bold mb-4 text-foreground">{board.title}</h1>
         {
           user.id === board.userId &&
           <Dialog>
             <DialogTrigger>
               <Cog/>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card border-border">
               <DialogHeader>
                 <DialogTitle><h1 className="text-2xl font-bold mb-4">{board.title}</h1></DialogTitle>
                 <div>
                   <form className='space-y-2 '>
-                    <Input defaultValue={board.title} onChange={e => setNewBoardTitle(e.target.value)}/>
+                    <Input
+                      className="bg-background border-border text-foreground"
+                      defaultValue={board.title} onChange={e => setNewBoardTitle(e.target.value)}/>
                     <SubmitButton submit={handleUpdateBoard} title='Kart Başlığı Güncelle' loading={loading}/>
                   </form>
                 </div>

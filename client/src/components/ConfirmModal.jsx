@@ -4,9 +4,9 @@ import { Button } from "./ui/button";
 export default function ConfirmModal({ isOpen, title, onConfirm, onCancel }) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onCancel(); }}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm bg-card border-border">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="text-card-foreground">{title}</DialogTitle>
         </DialogHeader>
 
         <DialogFooter className="flex justify-end gap-2 pt-4">

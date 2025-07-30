@@ -12,7 +12,7 @@ export default function SubmitButton({loading=false, submit, title}) {
             <Loader2 className="animate-spin" />
           </Button>
           :
-          <Button className='w-full' onClick={submit}>{title}</Button>
+          <Button className='w-full text-card dark:text-card-foreground' onClick={submit}>{title}</Button>
       }
     </>
 
